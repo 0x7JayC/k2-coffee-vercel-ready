@@ -1,9 +1,14 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/api/trpc/:path*", "destination": "/api/trpc/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+    "buildCommand": "vite build",
+    "outputDirectory": "dist/public",
+    "installCommand": "npm install",
+    "functions": {
+          "api/trpc/[trpc].ts": {
+                  "maxDuration": 30
+          }
+    },
+    "rewrites": [
+          { "source": "/api/trpc/(.*)", "destination": "/api/trpc/$1" },
+          { "source": "/((?!api/).*)", "destination": "/index.html" }
+    ]
 }
