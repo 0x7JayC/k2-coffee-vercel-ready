@@ -25,7 +25,8 @@
     "server/**/*",
     "shared/**/*",
     "drizzle/**/*",
-    "scripts/**/*"
+    "scripts/**/*",
+    "api/**/*"
   ],
   "exclude": ["node_modules", "dist"]
 }
