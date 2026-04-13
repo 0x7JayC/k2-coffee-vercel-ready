@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build && npx esbuild api/trpc/\\[trpc\\].ts --bundle --platform=node --packages=external --format=esm --outfile=api/trpc/\\[trpc\\].mjs",
+  "buildCommand": "npm run build && npx esbuild server/trpcEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/trpc/\\[trpc\\].mjs",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "functions": {
