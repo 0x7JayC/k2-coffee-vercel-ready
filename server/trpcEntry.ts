@@ -17,6 +17,7 @@ app.use(
       console.error(`[tRPC] error on ${path}:`, error.message, error.code);
     },
   })
+  const c1 = (error as any).cause; if (c1) { console.error('[tRPC] cause:', c1?.message, c1?.code); const c2 = c1?.cause; if (c2) console.error('[tRPC] root:', c2?.message, JSON.stringify(c2)); }
 );
 
 // Express error handler
