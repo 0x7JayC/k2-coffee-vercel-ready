@@ -9,7 +9,8 @@ export default function Ministries() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      {/* Header */}\n      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-16 sm:py-24">
+      {/* Header */}
+      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Our Ministry Partners</h1>
           <p className="text-xl text-amber-100 max-w-2xl mx-auto">
@@ -19,7 +20,7 @@ export default function Ministries() {
       </section>
 
       {/* Ministries Grid */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {ministriesQuery.isLoading ? (
             <div className="flex justify-center py-20">
@@ -27,22 +28,20 @@ export default function Ministries() {
             </div>
           ) : ministriesQuery.data && ministriesQuery.data.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {ministriesQuery.data.map((ministry, index) => (
-                <Card key={ministry.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+              {ministriesQuery.data.map((ministry) => (
+                <Card key={ministry.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col !py-0 gap-0">
                   {ministry.imageUrl && (
-                    <div className="h-64 bg-amber-100 overflow-hidden">
+                    <div className="h-64 overflow-hidden">
                       <img
                         src={ministry.imageUrl}
                         alt={ministry.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover block hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   )}
                   <div className="p-6 flex flex-col flex-grow">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-xl font-bold text-amber-900">{ministry.name}</h3>\n                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold text-sm">
-                        {index + 1}
-                      </span>
+                    <div className="mb-2">
+                      <h3 className="text-xl font-bold text-amber-900">{ministry.name}</h3>
                     </div>
                     <p className="text-amber-700 text-sm leading-relaxed mb-4 flex-grow">
                       {ministry.description}
@@ -72,7 +71,7 @@ export default function Ministries() {
       </section>
 
       {/* Impact Stats Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-amber-900 text-white">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-amber-900 text-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">Your Impact</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -93,7 +92,7 @@ export default function Ministries() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 mb-4">Ready to Make a Difference?</h2>
           <p className="text-lg text-amber-700 mb-8">
