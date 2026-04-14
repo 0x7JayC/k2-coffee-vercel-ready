@@ -99,7 +99,7 @@ export default function Shop() {
                     )}
                     <div className="flex items-center justify-between pt-4 border-t border-amber-100">
                       <span className="text-2xl font-bold text-amber-900">
-                        ${(product.price / 100).toFixed(2)}
+                        £{(product.price / 100).toFixed(2)}
                       </span>
                       <Button
                         onClick={() => handleAddToCart(product)}
@@ -134,7 +134,7 @@ export default function Shop() {
                   {cart.length} item{cart.length !== 1 ? "s" : ""} in cart
                 </p>
                 <p className="text-lg font-bold text-amber-900">
-                  ${(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) / 100).toFixed(2)}
+                  £{(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) / 100).toFixed(2)}
                 </p>
               </div>
             </div>
