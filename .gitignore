@@ -1,9 +1,4 @@
++++ .gitignore (修改后)
+```
 node_modules/
-dist/
-.env
-.env.local
-.env.*.local
-*.log
-.DS_Store
-.vscode/
-.idea/
+```
