@@ -1,4 +1,4 @@
-+++ .gitignore (修改后)
++++ .gitignore
 ```
 node_modules/
 ```
