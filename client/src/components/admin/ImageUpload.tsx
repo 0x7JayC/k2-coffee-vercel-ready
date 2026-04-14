@@ -21,8 +21,8 @@ export function ImageUpload({
     currentImageUrl || null
   );
 
-  const uploadProductMutation = trpc.images.uploadProductImage.useMutation();
-  const uploadMinistryMutation = trpc.images.uploadMinistryImage.useMutation();
+  const getProductImageUploadUrl = trpc.images.getProductImageUploadUrl.useQuery;
+  const getMinistryImageUploadUrl = trpc.images.getMinistryImageUploadUrl.useQuery;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,31 +45,39 @@ export function ImageUpload({
     };
     reader.readAsDataURL(file);
 
-    // Upload file
+    // Upload file using signed URL
     setIsUploading(true);
     try {
-      const buffer = await file.arrayBuffer();
-      const fileData = Array.from(new Uint8Array(buffer));
+      // Get signed upload URL from server
+      const uploadUrlQuery = type === "product" 
+        ? getProductImageUploadUrl({ filename: file.name, mimeType: file.type })
+        : getMinistryImageUploadUrl({ filename: file.name, mimeType: file.type });
 
-      let result;
-      if (type === "product") {
-        result = await uploadProductMutation.mutateAsync({
-          file: fileData as any,
-          filename: file.name,
-          mimeType: file.type,
-        });
-      } else {
-        result = await uploadMinistryMutation.mutateAsync({
-          file: fileData as any,
-          filename: file.name,
-          mimeType: file.type,
-        });
+      const { data: urlData, error: urlError } = await uploadUrlQuery;
+
+      if (urlError || !urlData) {
+        throw new Error(urlError?.message || "Failed to get upload URL");
       }
 
-      if (result) {
-        onUpload(result.url);
-        toast.success("Image uploaded successfully");
+      const { uploadUrl, publicUrl, key } = urlData;
+
+      // Upload file directly to Supabase Storage using the signed URL
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Upload failed: ${uploadResponse.status} ${errorText}`);
       }
+
+      // Upload successful, notify parent with the public URL
+      onUpload(publicUrl);
+      toast.success("Image uploaded successfully");
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload image");
