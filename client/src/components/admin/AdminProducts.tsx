@@ -273,7 +273,7 @@ export default function AdminProducts() {
               )}
               <div className="p-4">
                 <h3 className="font-bold text-amber-900 mb-1">{product.name}</h3>
-                <p className="text-sm text-amber-700 mb-3">${(product.price / 100).toFixed(2)}</p>
+                <p className="text-sm text-amber-700 mb-3">£{(product.price / 100).toFixed(2)}</p>
                 <p className="text-xs text-amber-600 mb-3 line-clamp-2">{product.description}</p>
                 <div className="flex gap-2">
                   <Button
