@@ -86,14 +86,14 @@ export default function Home() {
               {ministriesQuery.data.map((ministry) => (
                 <Card
                   key={ministry.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                  className="overflow-hidden hover:shadow-lg transition-shadow !py-0 gap-0"
                 >
                   {ministry.imageUrl && (
-                    <div className="h-48 bg-amber-100 overflow-hidden">
+                    <div className="h-48 overflow-hidden">
                       <img
                         src={ministry.imageUrl}
                         alt={ministry.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover block"
                       />
                     </div>
                   )}
@@ -143,14 +143,14 @@ export default function Home() {
               {productsQuery.data.slice(0, 3).map((product) => (
                 <Card
                   key={product.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                  className="overflow-hidden hover:shadow-lg transition-shadow !py-0 gap-0"
                 >
                   {product.imageUrl && (
-                    <div className="h-48 bg-amber-100 overflow-hidden">
+                    <div className="h-48 overflow-hidden">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover block"
                       />
                     </div>
                   )}
