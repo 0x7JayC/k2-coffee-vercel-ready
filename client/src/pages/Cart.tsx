@@ -158,7 +158,7 @@ export default function Cart() {
                     <div className="flex-grow">
                       <h3 className="font-bold text-amber-900">{item.name}</h3>
                       <p className="text-amber-700 text-sm mb-3">
-                        ${(item.price / 100).toFixed(2)} each
+                        £{(item.price / 100).toFixed(2)} each
                       </p>
                       <div className="flex items-center gap-2">
                         <Button
@@ -186,7 +186,7 @@ export default function Cart() {
                     </div>
                     <div className="text-right flex flex-col justify-between">
                       <p className="font-bold text-amber-900">
-                        ${((item.price * item.quantity) / 100).toFixed(2)}
+                        £{((item.price * item.quantity) / 100).toFixed(2)}
                       </p>
                       <Button
                         size="sm"
@@ -256,11 +256,11 @@ export default function Cart() {
                 <div className="space-y-3 mb-6 pb-6 border-b border-amber-200">
                   <div className="flex justify-between text-amber-700">
                     <span>Subtotal</span>
-                    <span>${(subtotal / 100).toFixed(2)}</span>
+                    <span>£{(subtotal / 100).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-amber-900 text-lg">
                     <span>Total</span>
-                    <span>${(subtotal / 100).toFixed(2)}</span>
+                    <span>£{(subtotal / 100).toFixed(2)}</span>
                   </div>
                 </div>
 
