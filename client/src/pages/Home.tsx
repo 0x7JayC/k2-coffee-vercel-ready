@@ -173,7 +173,7 @@ export default function Home() {
                     )}
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-amber-900">
-                        ${(product.price / 100).toFixed(2)}
+                        £{(product.price / 100).toFixed(2)}
                       </span>
                       <Link href="/shop">
                         <Button
