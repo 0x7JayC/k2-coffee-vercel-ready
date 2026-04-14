@@ -53,7 +53,7 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+    <div className={`min-h-screen bg-gradient-to-b from-amber-50 to-white${cart.length > 0 ? " pt-14" : ""}`}>
       {/* Header */}
       <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -74,13 +74,13 @@ export default function Shop() {
           ) : productsQuery.data && productsQuery.data.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {productsQuery.data.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col !py-0 gap-0">
                   {product.imageUrl && (
-                    <div className="h-64 bg-amber-100 overflow-hidden">
+                    <div className="h-64 overflow-hidden">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover block hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   )}
@@ -125,7 +125,7 @@ export default function Shop() {
 
       {/* Cart Summary */}
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-amber-200 shadow-lg">
+        <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-amber-200 shadow-md">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <ShoppingCart className="w-6 h-6 text-amber-900" />
