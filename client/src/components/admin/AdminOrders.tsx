@@ -70,7 +70,7 @@ export default function AdminOrders() {
                 </div>
                 <div>
                   <p className="text-xs text-amber-600 font-medium uppercase">Total</p>
-                  <p className="font-bold text-amber-900">${(order.totalAmount / 100).toFixed(2)}</p>
+                  <p className="font-bold text-amber-900">£{(order.totalAmount / 100).toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-amber-600 font-medium uppercase">Date</p>
