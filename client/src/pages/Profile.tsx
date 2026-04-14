@@ -139,7 +139,7 @@ export default function Profile() {
                             Total
                           </p>
                           <p className="font-bold text-amber-900">
-                            ${(order.totalAmount / 100).toFixed(2)}
+                            £{(order.totalAmount / 100).toFixed(2)}
                           </p>
                         </div>
                         <div>
