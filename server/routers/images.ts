@@ -1,3 +1,4 @@
++++ server/routers/images.ts (修改后)
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
@@ -15,88 +16,98 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
-async function uploadToSupabase(
+async function generateSignedUploadUrl(
   bucket: string,
-  fileData: number[],
   filename: string,
   mimeType: string
-): Promise<{ url: string; key: string }> {
-  const buffer = Buffer.from(fileData);
+): Promise<{ uploadUrl: string; publicUrl: string; key: string }> {
   const ext = filename.split(".").pop() || "jpg";
   const key = `${bucket}/${nanoid()}.${ext}`;
 
-  const { error } = await supabaseAdmin.storage
+  // Check if Supabase is configured
+  if (!ENV.supabaseUrl || !ENV.supabaseServiceKey) {
+    throw new Error("Supabase is not configured. Please set VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.");
+  }
+
+  // Generate a signed upload URL valid for 60 seconds
+  const { data: signedUrlData, error: urlError } = await supabaseAdmin.storage
     .from("images")
-    .upload(key, buffer, {
-      contentType: mimeType,
+    .createSignedUploadUrl(key, {
       upsert: false,
     });
 
-  if (error) {
-    throw new Error(`Storage upload failed: ${error.message}`);
+  if (urlError) {
+    console.error("[Images] Signed URL generation error:", urlError);
+    throw new Error(`Failed to generate upload URL: ${urlError.message}`);
   }
 
-  // Get the public URL
+  if (!signedUrlData?.signedUrl) {
+    throw new Error("Failed to generate upload URL: No URL returned");
+  }
+
+  // Get the public URL for later retrieval
   const {
     data: { publicUrl },
   } = supabaseAdmin.storage.from("images").getPublicUrl(key);
 
-  return { url: publicUrl, key };
+  return {
+    uploadUrl: signedUrlData.signedUrl,
+    publicUrl,
+    key
+  };
 }
 
 export const imagesRouter = router({
-  // Upload product image
-  uploadProductImage: adminProcedure
+  // Get signed upload URL for product image
+  getProductImageUploadUrl: adminProcedure
     .input(
       z.object({
-        file: z.array(z.number()),
         filename: z.string(),
         mimeType: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .query(async ({ input }) => {
       try {
-        const { url, key } = await uploadToSupabase(
+        const { uploadUrl, publicUrl, key } = await generateSignedUploadUrl(
           "products",
-          input.file,
           input.filename,
           input.mimeType
         );
 
-        return { success: true, url, key };
+        return { uploadUrl, publicUrl, key };
       } catch (error) {
-        console.error("[Images] Failed to upload product image:", error);
+        console.error("[Images] Failed to get product image upload URL:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to get upload URL";
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to upload image",
+          message: errorMessage,
         });
       }
     }),
 
-  // Upload ministry image
-  uploadMinistryImage: adminProcedure
+  // Get signed upload URL for ministry image
+  getMinistryImageUploadUrl: adminProcedure
     .input(
       z.object({
-        file: z.array(z.number()),
         filename: z.string(),
         mimeType: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .query(async ({ input }) => {
       try {
-        const { url, key } = await uploadToSupabase(
+        const { uploadUrl, publicUrl, key } = await generateSignedUploadUrl(
           "ministries",
-          input.file,
           input.filename,
           input.mimeType
         );
 
-        return { success: true, url, key };
+        return { uploadUrl, publicUrl, key };
       } catch (error) {
-        console.error("[Images] Failed to upload ministry image:", error);
+        console.error("[Images] Failed to get ministry image upload URL:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to get upload URL";
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to upload image",
+          message: errorMessage,
         });
       }
     }),
