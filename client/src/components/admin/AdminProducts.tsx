@@ -261,13 +261,13 @@ export default function AdminProducts() {
       ) : productsQuery.data && productsQuery.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {productsQuery.data.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
+            <Card key={product.id} className="overflow-hidden !py-0 gap-0">
               {product.imageUrl && (
-                <div className="h-40 bg-amber-100 overflow-hidden">
+                <div className="h-48 overflow-hidden">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover block"
                   />
                 </div>
               )}
