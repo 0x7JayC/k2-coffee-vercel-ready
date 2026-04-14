@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
-import { Loader2, TrendingUp, ShoppingCart, Users, DollarSign } from "lucide-react";
+import { Loader2, TrendingUp, ShoppingCart, Users, PoundSterling } from "lucide-react";
 
 export default function AdminAnalytics() {
   const ordersQuery = trpc.orders.list.useQuery();
@@ -59,10 +59,10 @@ export default function AdminAnalytics() {
             <div>
               <p className="text-sm text-green-700 font-medium">Total Revenue</p>
               <p className="text-3xl font-bold text-green-900 mt-2">
-                ${(totalRevenue / 100).toFixed(2)}
+                £{(totalRevenue / 100).toFixed(2)}
               </p>
             </div>
-            <DollarSign className="w-12 h-12 text-green-300 opacity-50" />
+            <PoundSterling className="w-12 h-12 text-green-300 opacity-50" />
           </div>
         </Card>
 
@@ -81,7 +81,7 @@ export default function AdminAnalytics() {
             <div>
               <p className="text-sm text-purple-700 font-medium">Avg Order Value</p>
               <p className="text-3xl font-bold text-purple-900 mt-2">
-                ${(averageOrderValue / 100).toFixed(2)}
+                £{(averageOrderValue / 100).toFixed(2)}
               </p>
             </div>
             <TrendingUp className="w-12 h-12 text-purple-300 opacity-50" />
@@ -120,7 +120,7 @@ export default function AdminAnalytics() {
             {Object.entries(ministryDonations).map(([ministryId, amount]) => (
               <div key={ministryId} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
                 <p className="text-sm font-medium text-amber-900">Ministry ID: {ministryId}</p>
-                <p className="text-lg font-bold text-amber-900">${(amount / 100).toFixed(2)}</p>
+                <p className="text-lg font-bold text-amber-900">£{(amount / 100).toFixed(2)}</p>
               </div>
             ))}
           </div>
@@ -147,7 +147,7 @@ export default function AdminAnalytics() {
                   <tr key={order.id} className="border-b border-amber-100 hover:bg-amber-50">
                     <td className="py-2 px-2 text-amber-900">#{order.id}</td>
                     <td className="py-2 px-2 text-amber-900">{order.customerEmail || "N/A"}</td>
-                    <td className="py-2 px-2 text-amber-900">${(order.totalAmount / 100).toFixed(2)}</td>
+                    <td className="py-2 px-2 text-amber-900">£{(order.totalAmount / 100).toFixed(2)}</td>
                     <td className="py-2 px-2">
                       <span
                         className={`px-2 py-1 rounded text-xs font-bold ${
