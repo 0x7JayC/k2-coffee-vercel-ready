@@ -41,7 +41,7 @@ export async function createCheckoutSession(req: CheckoutRequest) {
 
   const lineItems = items.map((item) => ({
     price_data: {
-      currency: "usd",
+      currency: "gbp",
       product_data: {
         name: item.name,
       },
