@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Mountain, Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface LayoutProps {
@@ -53,7 +53,9 @@ export default function Layout({ children }: LayoutProps) {
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer">
-                <Mountain className="w-8 h-8 text-amber-900" />
+                <svg width="32" height="32" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#78350f" d="M559.45,510.26l-95.49-150.6-59.05,93.01c-11.31,11.27-30,2.45-27.49-13.71.35-2.28,2.02-4.69,3.08-6.76,19.12-37.03,48.91-73.16,68.88-110.27,6.69-10.16,20.51-10.18,27.22,0l125.98,195.88c5.14,9.05.94,20.08-8.86,23.27l-383.24.71c-12.1-.56-19.1-13.29-13.07-23.98l157.87-252.58c6.47-9.1,19.17-9.46,26.01-.56,9.8,18.91,25.91,37.54,35.25,56.29,8.9,17.88-7.8,32.06-23.67,20.99l-23.31-36.8-2.03-.61-127.98,205.71h319.89Z"/>
+                </svg>
                 <span className="font-bold text-xl text-amber-900">
                   K2 Coffee
                 </span>
@@ -214,7 +216,9 @@ export default function Layout({ children }: LayoutProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Mountain className="w-6 h-6 text-amber-200" />
+                <svg width="24" height="24" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#ffffff" d="M559.45,510.26l-95.49-150.6-59.05,93.01c-11.31,11.27-30,2.45-27.49-13.71.35-2.28,2.02-4.69,3.08-6.76,19.12-37.03,48.91-73.16,68.88-110.27,6.69-10.16,20.51-10.18,27.22,0l125.98,195.88c5.14,9.05.94,20.08-8.86,23.27l-383.24.71c-12.1-.56-19.1-13.29-13.07-23.98l157.87-252.58c6.47-9.1,19.17-9.46,26.01-.56,9.8,18.91,25.91,37.54,35.25,56.29,8.9,17.88-7.8,32.06-23.67,20.99l-23.31-36.8-2.03-.61-127.98,205.71h319.89Z"/>
+                </svg>
                 <span className="font-bold text-lg">K2 Coffee</span>
               </div>
               <p className="text-sm text-amber-100">
