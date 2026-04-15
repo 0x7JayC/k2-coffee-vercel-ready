@@ -58,6 +58,7 @@ export default function AdminOrders() {
       ) : ordersQuery.data && ordersQuery.data.length > 0 ? (
         <div className="space-y-4">
           {ordersQuery.data.map((order) => {
+            // Parse items
             let items: Array<{ name: string; quantity: number; price: number }> = [];
             try {
               items = typeof order.items === "string"
@@ -65,6 +66,7 @@ export default function AdminOrders() {
                 : (order.items as any) ?? [];
             } catch {}
 
+            // Parse shipping address
             let shipping: Record<string, string | null> | null = null;
             try {
               if (order.shippingAddress) {
@@ -76,6 +78,7 @@ export default function AdminOrders() {
 
             return (
               <Card key={order.id} className="p-6">
+                {/* Top row: Order ID, Customer, Total, Date */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <p className="text-xs text-amber-600 font-medium uppercase">Order ID</p>
@@ -97,6 +100,7 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
+                {/* Ministry + Status row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pb-4 border-b border-amber-200">
                   <div>
                     <p className="text-xs text-amber-600 font-medium uppercase mb-1">Ministry</p>
@@ -112,7 +116,9 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
+                {/* Items + Shipping */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pb-4 border-b border-amber-200">
+                  {/* Items */}
                   <div>
                     <div className="flex items-center gap-1 mb-2">
                       <Package className="w-3.5 h-3.5 text-amber-600" />
@@ -121,7 +127,7 @@ export default function AdminOrders() {
                     <div className="space-y-1">
                       {items.length > 0 ? items.map((item, i) => (
                         <div key={i} className="flex justify-between text-sm text-amber-900">
-                          <span>{item.name} x{item.quantity}</span>
+                          <span>{item.name} × {item.quantity}</span>
                           <span className="text-amber-600">£{((item.price * item.quantity) / 100).toFixed(2)}</span>
                         </div>
                       )) : (
@@ -130,6 +136,7 @@ export default function AdminOrders() {
                     </div>
                   </div>
 
+                  {/* Shipping address */}
                   <div>
                     <div className="flex items-center gap-1 mb-2">
                       <MapPin className="w-3.5 h-3.5 text-amber-600" />
@@ -153,6 +160,7 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
+                {/* Update status */}
                 <div>
                   <p className="text-xs text-amber-600 font-medium uppercase mb-2">Update Status</p>
                   <Select

@@ -24,6 +24,7 @@ export default function OrderSuccess() {
     }
   }, [ready, sessionId]);
 
+  // Clear cart after successful confirmation
   useEffect(() => {
     if (confirmMutation.isSuccess) {
       localStorage.removeItem("k2_cart");
@@ -35,7 +36,7 @@ export default function OrderSuccess() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-white gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-amber-900" />
-        <p className="text-amber-700 font-medium">Confirming your order...</p>
+        <p className="text-amber-700 font-medium">Confirming your order…</p>
       </div>
     );
   }
@@ -43,6 +44,7 @@ export default function OrderSuccess() {
   const order = confirmMutation.data;
   const hasError = confirmMutation.isError;
 
+  // Parse items — stored as JSON string or array
   let items: Array<{ name: string; quantity: number; price: number }> = [];
   if (order?.items) {
     try {
@@ -50,6 +52,7 @@ export default function OrderSuccess() {
     } catch {}
   }
 
+  // Shipping address
   let shipping: Record<string, string | null> | null = null;
   if (order?.shippingAddress) {
     try {
@@ -61,6 +64,7 @@ export default function OrderSuccess() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+      {/* Header */}
       <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-2">
@@ -73,6 +77,7 @@ export default function OrderSuccess() {
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto space-y-6">
 
+          {/* Main confirmation card */}
           <Card className="p-8 text-center">
             <div className="flex justify-center mb-6">
               {hasError ? (
@@ -111,8 +116,10 @@ export default function OrderSuccess() {
             </div>
           </Card>
 
+          {/* Order detail cards — only shown when order saved successfully */}
           {order && (
             <>
+              {/* Items */}
               {items.length > 0 && (
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -122,7 +129,7 @@ export default function OrderSuccess() {
                   <div className="space-y-2">
                     {items.map((item, i) => (
                       <div key={i} className="flex justify-between text-sm text-amber-800">
-                        <span>{item.name} x{item.quantity}</span>
+                        <span>{item.name} × {item.quantity}</span>
                         <span>£{((item.price * item.quantity) / 100).toFixed(2)}</span>
                       </div>
                     ))}
@@ -134,6 +141,7 @@ export default function OrderSuccess() {
                 </Card>
               )}
 
+              {/* Shipping address */}
               {shipping && shipping.line1 && (
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -156,11 +164,12 @@ export default function OrderSuccess() {
             </>
           )}
 
+          {/* What happens next */}
           <div className="bg-amber-50 rounded-lg p-6">
             <h3 className="font-bold text-amber-900 mb-3">What happens next?</h3>
             <ul className="space-y-2 text-amber-700 text-sm">
               <li>✓ Confirmation email sent to your inbox</li>
-              <li>✓ Your order will be prepared for shipment within 2-3 business days</li>
+              <li>✓ Your order will be prepared for shipment within 2–3 business days</li>
               <li>✓ You'll receive a tracking number once it ships</li>
               <li>✓ 100% of your purchase supports the ministry you selected</li>
             </ul>
