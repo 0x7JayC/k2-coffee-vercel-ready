@@ -64,64 +64,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Ministries Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 mb-4">
-              Where Your Purchase Goes
-            </h2>
-            <p className="text-lg text-amber-700 max-w-2xl mx-auto">
-              Every coffee purchase directly supports one of our ministry
-              partners
-            </p>
-          </div>
-
-          {ministriesQuery.isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-amber-900" />
-            </div>
-          ) : ministriesQuery.data && ministriesQuery.data.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {ministriesQuery.data.map((ministry) => (
-                <Card
-                  key={ministry.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow !py-0 gap-0"
-                >
-                  {ministry.imageUrl && (
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={ministry.imageUrl}
-                        alt={ministry.name}
-                        className="w-full h-full object-cover block"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-amber-900 mb-2">
-                      {ministry.name}
-                    </h3>
-                    <p className="text-amber-700 text-sm leading-relaxed mb-4 line-clamp-3">
-                      {ministry.description}
-                    </p>
-                    {ministry.websiteUrl && (
-                      <a
-                        href={ministry.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                      >
-                        Learn More →
-                      </a>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
       {/* Featured Products Section */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-amber-50">
         <div className="max-w-6xl mx-auto">
@@ -200,8 +142,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Impact Section */}
+      {/* Featured Ministries Section */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 mb-4">
+              Where Your Purchase Goes
+            </h2>
+            <p className="text-lg text-amber-700 max-w-2xl mx-auto">
+              Every coffee purchase directly supports one of our ministry
+              partners
+            </p>
+          </div>
+
+          {ministriesQuery.isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-900" />
+            </div>
+          ) : ministriesQuery.data && ministriesQuery.data.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {ministriesQuery.data.map((ministry) => (
+                <Card
+                  key={ministry.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow !py-0 gap-0"
+                >
+                  {ministry.imageUrl && (
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={ministry.imageUrl}
+                        alt={ministry.name}
+                        className="w-full h-full object-cover block"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-amber-900 mb-2">
+                      {ministry.name}
+                    </h3>
+                    <p className="text-amber-700 text-sm leading-relaxed mb-4 line-clamp-3">
+                      {ministry.description}
+                    </p>
+                    {ministry.websiteUrl && (
+                      <a
+                        href={ministry.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-amber-600 hover:text-amber-700 text-sm font-medium"
+                      >
+                        Learn More →
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* Impact Section */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-amber-50">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
