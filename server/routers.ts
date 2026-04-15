@@ -4,6 +4,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
 import { checkoutRouter } from "./routers/checkout";
+import { getCheckoutSession } from "./_core/checkout";
 import { imagesRouter } from "./routers/images";
 import { orderNotificationsRouter } from "./routers/orderNotifications";
 import {
@@ -142,8 +143,92 @@ export const appRouter = router({
   // Orders router
   orders: router({
     list: adminProcedure.query(async () => {
-      return db.getOrders();
+      const orders = await db.getOrders();
+      const allMinistries = await db.getMinistries(false);
+      const ministryMap = Object.fromEntries(allMinistries.map((m) => [m.id, m.name]));
+      return orders.map((order) => ({
+        ...order,
+        ministryName: order.ministryId ? (ministryMap[order.ministryId] ?? null) : null,
+      }));
     }),
+    confirmFromStripe: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        // Idempotent — return existing order if already saved
+        const existing = await db.getOrderByStripeSessionId(input.sessionId);
+        if (existing) return existing;
+
+        const session = await getCheckoutSession(input.sessionId);
+
+        if (session.payment_status !== "paid") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Payment not completed yet",
+          });
+        }
+
+        const ministryId = parseInt(session.metadata?.ministryId || "0") || null;
+        const items = JSON.parse(session.metadata?.items || "[]");
+
+        const shippingDetails = (session as any).shipping_details;
+        const shippingAddress = shippingDetails
+          ? {
+              name: shippingDetails.name ?? null,
+              line1: shippingDetails.address?.line1 ?? null,
+              line2: shippingDetails.address?.line2 ?? null,
+              city: shippingDetails.address?.city ?? null,
+              state: shippingDetails.address?.state ?? null,
+              postalCode: shippingDetails.address?.postal_code ?? null,
+              country: shippingDetails.address?.country ?? null,
+            }
+          : null;
+
+        const order = await db.createOrder({
+          userId: ctx.user.id,
+          ministryId: ministryId ?? undefined,
+          stripeSessionId: session.id,
+          stripePaymentIntentId:
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : null,
+          customerEmail: session.customer_email || ctx.user.email || "",
+          totalAmount: session.amount_total || 0,
+          currency: session.currency || "gbp",
+          status: "paid",
+          items: items as any,
+          shippingAddress: shippingAddress as any,
+        });
+
+        if (order) {
+          const ministry = ministryId ? await db.getMinistryById(ministryId) : null;
+          const ministryName = ministry?.name || "K2 Coffee Ministry";
+          try {
+            await sendOrderConfirmationEmail(
+              ctx.user.email || "",
+              ctx.user.name || "Valued Customer",
+              order.id,
+              items,
+              order.totalAmount,
+              ministryName
+            );
+            if (ENV.adminEmail) {
+              await sendAdminOrderAlert(
+                ENV.adminEmail,
+                order.id,
+                ctx.user.name || "Customer",
+                ctx.user.email || "",
+                items,
+                order.totalAmount,
+                ministryName
+              );
+            }
+          } catch (e) {
+            console.error("[Order] Email failed:", e);
+          }
+        }
+
+        return order;
+      }),
     listMine: protectedProcedure.query(async ({ ctx }) => {
       return db.getOrders(ctx.user.id);
     }),
