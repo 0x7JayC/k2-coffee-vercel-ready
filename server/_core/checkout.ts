@@ -57,6 +57,12 @@ export async function createCheckoutSession(req: CheckoutRequest) {
     success_url: `${origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/order/cancel`,
     customer_email: userEmail,
+    shipping_address_collection: {
+      allowed_countries: ["GB", "US", "AU", "CA", "NZ", "IE", "SG", "HK"],
+    },
+    phone_number_collection: {
+      enabled: true,
+    },
     metadata: {
       userId: userId?.toString() || "",
       ministryId: ministryId.toString(),
