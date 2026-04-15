@@ -20,6 +20,10 @@ export const ENV = {
   emailFrom: process.env.EMAIL_FROM ?? "K2 Coffee <noreply@k2coffee.xyz>",
 
   // App
-  frontendUrl: process.env.VITE_FRONTEND_URL ?? "http://localhost:3000",
+  frontendUrl:
+    process.env.VITE_FRONTEND_URL ??
+    (process.env.NODE_ENV === "production"
+      ? "https://www.k2coffee.xyz"
+      : "http://localhost:3000"),
   isProduction: process.env.NODE_ENV === "production",
 };
