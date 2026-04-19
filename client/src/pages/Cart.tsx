@@ -124,7 +124,7 @@ export default function Cart() {
               {cart.map(item => (
                 <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '64px 1fr' : '80px 1fr auto',
                   gap: isMobile ? 14 : 20, padding: '20px 0', borderBottom: `1px solid ${C.hairline}`, alignItems: 'flex-start' }}>
-                  <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', background: C.paper, flexShrink: 0 }}>
+                  <div style={{ width: isMobile ? 64 : 80, height: isMobile ? 64 : 80, borderRadius: 12, overflow: 'hidden', background: C.paper, flexShrink: 0 }}>
                     {item.imageUrl && (
                       <img src={item.imageUrl} alt={item.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.9)' }}/>
@@ -176,7 +176,7 @@ export default function Cart() {
 
           {/* Summary */}
           <div style={isMobile ? {} : { position: 'sticky', top: 80 }}>
-            <div style={{ background: C.paper, borderRadius: 20, padding: 32 }}>
+            <div style={{ background: C.paper, borderRadius: 20, padding: isMobile ? 20 : 32 }}>
               <h2 style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, margin: '0 0 24px' }}>
                 Order summary
               </h2>
