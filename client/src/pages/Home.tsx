@@ -157,19 +157,19 @@ const CHAPTERS = [
     num: '01', eyebrow: 'The Mountain',
     quote: 'The mountain does not need to be the tallest to matter most.',
     body: 'There is a mountain on the border of Pakistan and China. It is not the tallest — it is the second tallest. Every climber who has stood at its base says the same thing: K2 is harder. More demanding. More unforgiving. It does not boast. It simply stands, completely, fully what it was made to be — and by standing, it asks something of you.',
-    side: 'left',
+    side: 'left', image: '/story-1.jpg',
   },
   {
     num: '02', eyebrow: 'The Morning',
     quote: 'What is this day actually for?',
     body: "The kettle. The bloom. The wait. Four or five minutes where the world hasn't asked anything of you yet. That moment was worth something. K2 Coffee was built inside that question — not to be the most famous coffee brand, but to be the most faithful one.",
-    side: 'right',
+    side: 'right', image: '/story-2.jpg',
   },
   {
     num: '03', eyebrow: 'The Mission',
     quote: 'Ordinary purchasing decisions — made consistently, by enough people — can fund extraordinary things.',
     body: 'In 1904, Father Alfred Liétard planted the first Arabica trees in Yunnan — not for commerce, but as part of a life given to a place and its people. Over a century later, those highlands are still growing. When you buy a K2 coffee, you choose where your purchase goes beyond your cup. Not a vague cause. A specific name. A specific place. A specific job.',
-    side: 'left',
+    side: 'left', image: '/story-3.jpg',
   },
 ];
 
@@ -201,8 +201,11 @@ function StoryChapter({ ch, idx }: { ch: typeof CHAPTERS[0]; idx: number }) {
         </p>
       </div>
       <div style={{ order: flipped ? 1 : 2 }}>
-        {/* Replace with a real brand/origin image for each chapter */}
-        <div style={{ aspectRatio: '4/3', borderRadius: 20, background: C.paper }}/>
+        <div style={{ aspectRatio: '4/3', borderRadius: 20, overflow: 'hidden', background: C.paper }}>
+          <img src={ch.image} alt={ch.eyebrow}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+              filter: 'saturate(0.92) contrast(1.03)' }} />
+        </div>
       </div>
     </div>
   );
