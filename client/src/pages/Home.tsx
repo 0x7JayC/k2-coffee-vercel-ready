@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { C, FD, FS, FM, fmt } from "@/lib/tokens";
 import { K2Logo } from "@/components/Layout";
+import { useIsMobile } from "@/hooks/useMobile";
 
 // ─── Reveal hook ──────────────────────────────────────────────────────────────
 function useReveal(delay = 0) {
@@ -39,6 +40,7 @@ function IconArrow({ size = 16, color = 'currentColor' }: { size?: number; color
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 function Hero() {
   const [mounted, setMounted] = useState(false);
+  const isMobile = useIsMobile();
   useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t); }, []);
 
   const fade = (delay: number): React.CSSProperties => ({
@@ -46,6 +48,79 @@ function Hero() {
     transform: mounted ? 'none' : 'translateY(18px)',
     transition: `opacity 800ms ${delay}ms cubic-bezier(0.16,1,0.3,1), transform 800ms ${delay}ms cubic-bezier(0.16,1,0.3,1)`,
   });
+
+  if (isMobile) {
+    return (
+      <section style={{ position: 'relative', background: C.linen, overflow: 'hidden' }}>
+        {/* Hero image */}
+        <div style={{ position: 'relative', height: '55vw', minHeight: 220, maxHeight: 360 }}>
+          <img src="/hero-image.jpg" alt="Coffee cherries on the branch, Yunnan"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+              filter: 'saturate(0.9) contrast(1.05)' }} />
+          <div style={{ position: 'absolute', left: 16, bottom: 16, display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 14px', borderRadius: 9999, background: 'rgba(250,245,234,0.88)',
+            backdropFilter: 'blur(8px)', border: `1px solid ${C.hairline}`,
+            opacity: mounted ? 1 : 0, transition: 'opacity 700ms 500ms ease' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.crema} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 20 9 9l4 6 3-4 5 9H3Z"/>
+            </svg>
+            <span style={{ fontFamily: FM, fontSize: 11, color: C.cocoa }}>Harvest · Yunnan</span>
+          </div>
+        </div>
+
+        {/* Text content */}
+        <div style={{ padding: '40px 20px 56px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...fade(0) }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.crema, display: 'inline-block',
+              animation: 'k2PulseDot 2.4s ease-in-out infinite' }}/>
+            <span style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha }}>
+              Yunnan · 1,847m
+            </span>
+          </div>
+
+          <h1 style={{ fontFamily: FD, fontSize: 'clamp(2.8rem,10vw,4rem)', lineHeight: 0.97, fontWeight: 400,
+            letterSpacing: '-0.025em', color: C.bark, margin: '20px 0 0', ...fade(80) }}>
+            A cup that<br/>
+            <em style={{ fontStyle: 'italic', color: C.cocoa }}>remembers</em><br/>
+            its altitude.
+          </h1>
+
+          <p style={{ fontFamily: FS, fontSize: 16, lineHeight: 1.72, color: C.mocha,
+            margin: '20px 0 0', ...fade(160) }}>
+            Single-origin Arabica from Yunnan's volcanic highlands. Every bag funds a named ministry partner.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 28, ...fade(240) }}>
+            <Link href="/shop"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                padding: '14px 24px', background: C.bark, color: C.ivory, textDecoration: 'none',
+                borderRadius: 9999, fontFamily: FS, fontSize: 14, fontWeight: 500 }}>
+              Shop the harvest <IconArrow size={16} />
+            </Link>
+            <Link href="/ministries"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                padding: '14px 24px', background: 'transparent', color: C.cocoa, textDecoration: 'none',
+                border: `1px solid ${C.hairline}`, borderRadius: 9999, fontFamily: FS, fontSize: 14, fontWeight: 500 }}>
+              Meet the partners
+            </Link>
+          </div>
+
+          <div style={{ borderTop: `1px solid ${C.hairline}`, paddingTop: 20, marginTop: 36, display: 'grid',
+            gridTemplateColumns: 'repeat(2,1fr)', gap: 0, maxWidth: 240, ...fade(320) }}>
+            {[['Origin','Yunnan, China'],['Altitude','1,847m']].map(([label,val],i) => (
+              <div key={String(label)} style={{
+                borderRight: i === 0 ? `1px solid ${C.hairline}` : 'none',
+                padding: i === 0 ? '0 16px 0 0' : '0 0 0 16px',
+              }}>
+                <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.dust }}>{label}</div>
+                <div style={{ fontFamily: FM, fontSize: 15, color: C.cocoa, marginTop: 4 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section style={{ position: 'relative', minHeight: '100dvh', background: C.linen, overflow: 'hidden' }}>
@@ -178,30 +253,34 @@ function StoryChapter({ ch, idx }: { ch: typeof CHAPTERS[0]; idx: number }) {
   const [rEye, sEye] = useReveal(80);
   const [rQ, sQ]     = useReveal(160);
   const [rB, sB]     = useReveal(240);
+  const isMobile = useIsMobile();
   const flipped = ch.side === 'right';
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center',
-      padding: '80px 0', borderTop: idx > 0 ? `1px solid ${C.hairline}` : 'none' }}>
-      <div style={{ order: flipped ? 2 : 1 }}>
-        <div ref={rNum} style={{ ...sNum, fontFamily: FD, fontSize: 'clamp(6rem,10vw,10rem)', fontWeight: 400,
-          color: C.hairline, lineHeight: 1, userSelect: 'none', marginBottom: -16 }}>
+    <div style={{ display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+      gap: isMobile ? 28 : 80, alignItems: 'center',
+      padding: `${isMobile ? 48 : 80}px 0`,
+      borderTop: idx > 0 ? `1px solid ${C.hairline}` : 'none' }}>
+      <div style={{ order: isMobile ? 2 : (flipped ? 2 : 1) }}>
+        <div ref={rNum} style={{ ...sNum, fontFamily: FD, fontSize: 'clamp(4rem,10vw,10rem)', fontWeight: 400,
+          color: C.hairline, lineHeight: 1, userSelect: 'none', marginBottom: -12 }}>
           {ch.num}
         </div>
         <div ref={rEye} style={{ ...sEye, fontFamily: FM, fontSize: 11, letterSpacing: '0.22em',
           textTransform: 'uppercase', color: C.crema, marginBottom: 16 }}>
           {ch.eyebrow}
         </div>
-        <blockquote ref={rQ} style={{ ...sQ, fontFamily: FD, fontSize: 'clamp(1.4rem,2.4vw,2rem)',
+        <blockquote ref={rQ} style={{ ...sQ, fontFamily: FD, fontSize: 'clamp(1.3rem,2.4vw,2rem)',
           fontWeight: 400, color: C.bark, lineHeight: 1.2, letterSpacing: '-0.02em',
           margin: 0, borderLeft: `2px solid ${C.crema}`, paddingLeft: 20 }}>
           "{ch.quote}"
         </blockquote>
-        <p ref={rB} style={{ ...sB, fontFamily: FS, fontSize: 15, color: C.mocha, lineHeight: 1.78, marginTop: 20, maxWidth: '52ch' }}>
+        <p ref={rB} style={{ ...sB, fontFamily: FS, fontSize: 15, color: C.mocha, lineHeight: 1.78, marginTop: 20 }}>
           {ch.body}
         </p>
       </div>
-      <div style={{ order: flipped ? 1 : 2 }}>
-        <div style={{ aspectRatio: '4/3', borderRadius: 20, overflow: 'hidden', background: C.paper }}>
+      <div style={{ order: isMobile ? 1 : (flipped ? 1 : 2) }}>
+        <div style={{ aspectRatio: '4/3', borderRadius: isMobile ? 16 : 20, overflow: 'hidden', background: C.paper }}>
           <img src={ch.image} alt={ch.eyebrow}
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
               filter: 'saturate(0.92) contrast(1.03)' }} />
@@ -213,9 +292,10 @@ function StoryChapter({ ch, idx }: { ch: typeof CHAPTERS[0]; idx: number }) {
 
 function StorySection() {
   const [ref, style] = useReveal();
+  const isMobile = useIsMobile();
   return (
-    <section style={{ background: C.linen, padding: '80px 0' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px' }}>
+    <section style={{ background: C.linen, padding: `${isMobile ? 56 : 80}px 0` }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `0 ${isMobile ? 20 : 40}px` }}>
         <div ref={ref} style={{ ...style, marginBottom: 16 }}>
           <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 12 }}>
             The origin
@@ -312,22 +392,24 @@ function ProductCard({ p, i }: { p: any; i: number }) {
 function HomeProductRail() {
   const productsQuery = trpc.products.list.useQuery();
   const [rHead, sHead] = useReveal();
+  const isMobile = useIsMobile();
   const products = productsQuery.data ?? [];
+  const pad = isMobile ? 20 : 40;
 
   return (
-    <section style={{ background: C.paper, padding: '96px 0' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 56 }}>
-          <div ref={rHead} style={sHead}>
-            <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 12 }}>
-              01 · The harvest
-            </p>
-            <h2 style={{ fontFamily: FD, fontSize: 'clamp(2rem,3.5vw,3.25rem)', fontWeight: 400,
-              letterSpacing: '-0.025em', color: C.bark, maxWidth: '18ch', lineHeight: 1.0, margin: 0 }}>
-              Each roast. <em style={{ fontStyle: 'italic', color: C.cocoa }}>Each from one estate.</em>
-            </h2>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+    <section style={{ background: C.paper, padding: `${isMobile ? 64 : 96}px 0` }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `0 ${pad}px` }}>
+        <div style={{ marginBottom: isMobile ? 36 : 56 }}>
+          <div ref={rHead} style={{ ...sHead, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 12 }}>
+                01 · The harvest
+              </p>
+              <h2 style={{ fontFamily: FD, fontSize: 'clamp(1.8rem,3.5vw,3.25rem)', fontWeight: 400,
+                letterSpacing: '-0.025em', color: C.bark, maxWidth: '18ch', lineHeight: 1.0, margin: 0 }}>
+                Each roast. <em style={{ fontStyle: 'italic', color: C.cocoa }}>Each from one estate.</em>
+              </h2>
+            </div>
             <Link href="/shop"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none',
                 fontFamily: FS, fontSize: 14, color: C.cocoa,
@@ -337,7 +419,7 @@ function HomeProductRail() {
           </div>
         </div>
         <div className="k2-hide-scroll" style={{ display: 'flex', gap: 20, overflowX: 'auto', paddingBottom: 16,
-          marginLeft: -40, marginRight: -40, paddingLeft: 40, paddingRight: 40, scrollSnapType: 'x mandatory' }}>
+          marginLeft: -pad, marginRight: -pad, paddingLeft: pad, paddingRight: pad, scrollSnapType: 'x mandatory' }}>
           {products.map((p, i) => <ProductCard key={p.id} p={p} i={i} />)}
           {products.length === 0 && !productsQuery.isLoading && (
             <p style={{ fontFamily: FS, fontSize: 14, color: C.mocha }}>No products available yet.</p>
@@ -360,28 +442,30 @@ const BREW_STEPS = [
 function EarDripGuide() {
   const [rHead, sHead] = useReveal();
   const [activeStep, setActiveStep] = useState(0);
+  const isMobile = useIsMobile();
+  const pad = isMobile ? 20 : 40;
 
   return (
-    <section style={{ background: C.ivory, padding: '96px 0', borderTop: `1px solid ${C.hairline}` }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px' }}>
-        <div ref={rHead} style={{ ...sHead, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginBottom: 64, alignItems: 'flex-end' }}>
-          <div>
-            <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 14 }}>
-              02 · The brew
-            </p>
-            <h2 style={{ fontFamily: FD, fontSize: 'clamp(2rem,3.8vw,3.5rem)', fontWeight: 400,
+    <section style={{ background: C.ivory, padding: `${isMobile ? 64 : 96}px 0`, borderTop: `1px solid ${C.hairline}` }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `0 ${pad}px` }}>
+        <div ref={rHead} style={{ ...sHead, marginBottom: isMobile ? 40 : 64 }}>
+          <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 14 }}>
+            02 · The brew
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 16 : 40, alignItems: 'flex-end' }}>
+            <h2 style={{ fontFamily: FD, fontSize: 'clamp(1.8rem,3.8vw,3.5rem)', fontWeight: 400,
               letterSpacing: '-0.025em', color: C.bark, lineHeight: 0.97, maxWidth: '16ch', margin: 0 }}>
               How to brew{' '}
               <em style={{ fontStyle: 'italic', color: C.cocoa }}>ear drip coffee.</em>
             </h2>
+            <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, lineHeight: 1.78 }}>
+              Ear drip (耳挂咖啡) is a single-serve pour-over bag — no equipment needed. Just a cup, hot water,
+              and five minutes before the world arrives.
+            </p>
           </div>
-          <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, lineHeight: 1.78, maxWidth: '44ch' }}>
-            Ear drip (耳挂咖啡) is a single-serve pour-over bag — no equipment needed. Just a cup, hot water,
-            and five minutes before the world arrives.
-          </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'flex-start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 32 : 64, alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {BREW_STEPS.map((step, i) => {
               const active = activeStep === i;
@@ -432,8 +516,8 @@ function EarDripGuide() {
             )}
           </div>
 
-          <div style={{ position: 'sticky', top: 80 }}>
-            <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 24, overflow: 'hidden', background: C.paper }}>
+          <div style={isMobile ? {} : { position: 'sticky', top: 80 }}>
+            <div style={{ position: 'relative', aspectRatio: isMobile ? '4/3' : '4/5', borderRadius: 24, overflow: 'hidden', background: C.paper }}>
               {BREW_STEPS.map((step, i) => (
                 <img key={i} src={step.image} alt={step.title}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
@@ -481,18 +565,20 @@ function EarDripGuide() {
 
 // ─── Impact Strip ─────────────────────────────────────────────────────────────
 function ImpactStrip() {
+  const isMobile = useIsMobile();
   const rows = [
     { k: 'Proceeds to partners', v: '100%', note: 'After roasting, packaging, and shipping. No one draws a salary from K2.' },
     { k: 'Origin altitude', v: '1,847m', note: 'Slow-grown on volcanic red soil in Baoshan County, Yunnan.' },
   ];
+  const pad = isMobile ? 20 : 40;
   return (
-    <section style={{ background: C.linen, padding: '96px 0', borderTop: `1px solid ${C.hairline}` }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px' }}>
-        <div style={{ marginBottom: 48 }}>
+    <section style={{ background: C.linen, padding: `${isMobile ? 64 : 96}px 0`, borderTop: `1px solid ${C.hairline}` }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `0 ${pad}px` }}>
+        <div style={{ marginBottom: isMobile ? 32 : 48 }}>
           <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 12 }}>
             03 · The receipts
           </p>
-          <h2 style={{ fontFamily: FD, fontSize: 'clamp(2rem,3.5vw,3.25rem)', fontWeight: 400,
+          <h2 style={{ fontFamily: FD, fontSize: 'clamp(1.8rem,3.5vw,3.25rem)', fontWeight: 400,
             letterSpacing: '-0.025em', color: C.bark, maxWidth: '18ch', lineHeight: 1.0, margin: 0 }}>
             Trust is <em style={{ fontStyle: 'italic', color: C.cocoa }}>a line item.</em>
           </h2>
@@ -501,8 +587,12 @@ function ImpactStrip() {
           {rows.map((r, i) => {
             const [ref, style] = useReveal(i * 60);
             return (
-              <div key={r.k} ref={ref} style={{ ...style, display: 'grid', gridTemplateColumns: '3fr 3fr 5fr',
-                gap: 24, padding: '32px 0', borderBottom: `1px solid ${C.hairline}`, alignItems: 'baseline' }}>
+              <div key={r.k} ref={ref} style={{ ...style,
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '3fr 3fr 5fr',
+                gap: isMobile ? 8 : 24,
+                padding: `${isMobile ? 24 : 32}px 0`,
+                borderBottom: `1px solid ${C.hairline}` }}>
                 <dt style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.dust }}>
                   {r.k}
                 </dt>
@@ -523,22 +613,25 @@ function ImpactStrip() {
 // ─── Closing CTA ──────────────────────────────────────────────────────────────
 function ClosingCTA() {
   const [ref, style] = useReveal();
+  const isMobile = useIsMobile();
+  const pad = isMobile ? 20 : 40;
   return (
-    <section style={{ background: C.bark, padding: '96px 40px', position: 'relative', overflow: 'hidden' }}>
-      <div ref={ref} style={{ ...style, maxWidth: 1400, margin: '0 auto', display: 'grid',
-        gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'flex-end', position: 'relative' }}>
+    <section style={{ background: C.bark, padding: `${isMobile ? 64 : 96}px ${pad}px`, position: 'relative', overflow: 'hidden' }}>
+      <div ref={ref} style={{ ...style, maxWidth: 1400, margin: '0 auto',
+        display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        gap: isMobile ? 28 : 40, alignItems: 'flex-end', position: 'relative' }}>
         <div>
           <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.dust, marginBottom: 20 }}>
             Next step
           </p>
-          <h2 style={{ fontFamily: FD, fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 400,
+          <h2 style={{ fontFamily: FD, fontSize: 'clamp(2.2rem,5vw,4.5rem)', fontWeight: 400,
             letterSpacing: '-0.025em', color: C.ivory, lineHeight: 0.98, maxWidth: '16ch', margin: 0 }}>
             Pick a roast.<br/>
             <em style={{ color: C.dust }}>Pick a partner.</em>
           </h2>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 16 }}>
-          <p style={{ fontFamily: FS, fontSize: 15, color: C.dust, lineHeight: 1.75, maxWidth: '36ch', textAlign: 'right' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'flex-start' : 'flex-end', gap: 16 }}>
+          <p style={{ fontFamily: FS, fontSize: 15, color: C.dust, lineHeight: 1.75, textAlign: isMobile ? 'left' : 'right' }}>
             You'll see the ministry tag at checkout. One order, one chain of custody.
           </p>
           <Link href="/shop"

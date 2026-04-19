@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { C, FD, FS, FM } from "@/lib/tokens";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,6 +36,17 @@ export function K2Logo({ size = 28, color = C.bark }: { size?: number; color?: s
   );
 }
 
+// ─── Hamburger Icon ───────────────────────────────────────────────────────────
+function IconMenu() {
+  return (
+    <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden>
+      <line x1="0" y1="1.5" x2="22" y2="1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="4" y1="8" x2="22" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="0" y1="14.5" x2="22" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 // ─── Ministry Drawer ──────────────────────────────────────────────────────────
 interface Ministry {
   id: number;
@@ -60,6 +72,7 @@ function MinistryDrawer({
 }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     requestAnimationFrame(() => setOpen(true));
@@ -92,7 +105,7 @@ function MinistryDrawer({
       }}/>
       <div style={{
         position: 'relative', background: C.ivory, borderRadius: '24px 24px 0 0',
-        padding: '32px 40px 40px', maxHeight: '72vh', overflowY: 'auto',
+        padding: `32px ${isMobile ? 20 : 40}px 40px`, maxHeight: '80vh', overflowY: 'auto',
         transform: open ? 'translateY(0)' : 'translateY(100%)',
         transition: 'transform 350ms cubic-bezier(0.16,1,0.3,1)',
         boxShadow: '0 -8px 40px rgba(43,29,20,0.12)',
@@ -119,7 +132,11 @@ function MinistryDrawer({
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(ministries.length, 3)},1fr)`, gap: 12, margin: '24px 0' }}>
+        <div style={{ display: 'grid',
+          gridTemplateColumns: isMobile
+            ? (ministries.length === 1 ? '1fr' : 'repeat(2,1fr)')
+            : `repeat(${Math.min(ministries.length, 3)},1fr)`,
+          gap: 12, margin: '24px 0' }}>
           {ministries.map(m => (
             <button key={m.id} onClick={() => setSelected(m.id)}
               style={{
@@ -196,8 +213,12 @@ export function Toast({ message, onDone }: { message: string; onDone: () => void
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 function Nav({ cartCount }: { cartCount: number }) {
   const { user, isAuthenticated, logout } = useAuth();
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  useEffect(() => { setMenuOpen(false); }, [location]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -210,96 +231,193 @@ function Nav({ cartCount }: { cartCount: number }) {
     { label: 'Ministries', href: '/ministries' },
   ];
 
+  const CartIcon = () => (
+    <Link href="/cart" style={{ position: 'relative', textDecoration: 'none', display: 'flex', padding: 4 }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.bark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      {cartCount > 0 && (
+        <span style={{
+          position: 'absolute', top: -4, right: -4, background: C.crema, color: C.bark,
+          width: 16, height: 16, borderRadius: '50%', fontSize: 9, fontFamily: FM,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600,
+        }}>
+          {cartCount}
+        </span>
+      )}
+    </Link>
+  );
+
   return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 50,
-      background: C.linen,
-      borderBottom: `1px solid ${scrolled ? C.hairline : 'transparent'}`,
-      transition: 'border-color 300ms ease',
-    }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+    <>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: C.linen,
+        borderBottom: `1px solid ${scrolled ? C.hairline : 'transparent'}`,
+        transition: 'border-color 300ms ease',
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: `0 ${isMobile ? 20 : 40}px`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
 
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <K2Logo size={42} />
-          <span style={{ fontFamily: FD, fontSize: 21, fontWeight: 400, color: C.bark, letterSpacing: '-0.015em' }}>
-            K2 Coffee
-          </span>
-        </Link>
-
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-          {navLinks.map(l => (
-            <Link key={l.href} href={l.href}
-              style={{
-                textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500,
-                color: location === l.href ? C.bark : C.mocha, transition: 'color 200ms',
-              }}>
-              {l.label}
-            </Link>
-          ))}
-          {isAuthenticated && user?.role === 'admin' && (
-            <Link href="/admin" style={{ textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500, color: C.mocha }}>
-              Admin
-            </Link>
-          )}
-        </nav>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/cart" style={{ position: 'relative', textDecoration: 'none', display: 'flex', padding: 4 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.bark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-            {cartCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -4, right: -4, background: C.crema, color: C.bark,
-                width: 16, height: 16, borderRadius: '50%', fontSize: 9, fontFamily: FM,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600,
-              }}>
-                {cartCount}
-              </span>
-            )}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+            <K2Logo size={isMobile ? 32 : 42} />
+            <span style={{ fontFamily: FD, fontSize: isMobile ? 18 : 21, fontWeight: 400, color: C.bark, letterSpacing: '-0.015em' }}>
+              K2 Coffee
+            </span>
           </Link>
 
-          {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Link href="/profile"
-                style={{ fontFamily: FS, fontSize: 13, color: C.mocha, textDecoration: 'none' }}>
-                {user?.name || user?.email}
+          {!isMobile && (
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+              {navLinks.map(l => (
+                <Link key={l.href} href={l.href}
+                  style={{
+                    textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500,
+                    color: location === l.href ? C.bark : C.mocha, transition: 'color 200ms',
+                  }}>
+                  {l.label}
+                </Link>
+              ))}
+              {isAuthenticated && user?.role === 'admin' && (
+                <Link href="/admin" style={{ textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500, color: C.mocha }}>
+                  Admin
+                </Link>
+              )}
+            </nav>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 16 }}>
+            <CartIcon />
+            {!isMobile && (
+              isAuthenticated ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Link href="/profile"
+                    style={{ fontFamily: FS, fontSize: 13, color: C.mocha, textDecoration: 'none' }}>
+                    {user?.name || user?.email}
+                  </Link>
+                  <button onClick={() => logout()}
+                    style={{ background: 'none', border: `1px solid ${C.hairline}`, cursor: 'pointer',
+                      padding: '8px 16px', borderRadius: 9999, fontFamily: FS, fontSize: 13, color: C.mocha }}>
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth"
+                  style={{
+                    background: C.bark, color: C.ivory, textDecoration: 'none',
+                    padding: '8px 20px', borderRadius: 9999, fontFamily: FS, fontSize: 13, fontWeight: 500,
+                  }}>
+                  Sign In
+                </Link>
+              )
+            )}
+            {isMobile && (
+              <button onClick={() => setMenuOpen(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer',
+                  color: C.bark, padding: 4, display: 'flex', alignItems: 'center' }}>
+                <IconMenu />
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {isMobile && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          pointerEvents: menuOpen ? 'auto' : 'none',
+        }}>
+          <div onClick={() => setMenuOpen(false)} style={{
+            position: 'absolute', inset: 0,
+            background: `rgba(43,29,20,${menuOpen ? 0.5 : 0})`,
+            backdropFilter: menuOpen ? 'blur(4px)' : 'none',
+            transition: 'background 300ms ease',
+          }}/>
+          <div style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0, width: '80%', maxWidth: 320,
+            background: C.ivory, padding: '24px 24px 40px',
+            display: 'flex', flexDirection: 'column',
+            transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform 320ms cubic-bezier(0.16,1,0.3,1)',
+            boxShadow: '-8px 0 40px rgba(43,29,20,0.12)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
+              <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+                <K2Logo size={28} />
+                <span style={{ fontFamily: FD, fontSize: 18, color: C.bark }}>K2 Coffee</span>
               </Link>
-              <button onClick={() => logout()}
-                style={{ background: 'none', border: `1px solid ${C.hairline}`, cursor: 'pointer',
-                  padding: '8px 16px', borderRadius: 9999, fontFamily: FS, fontSize: 13, color: C.mocha }}>
-                Sign Out
+              <button onClick={() => setMenuOpen(false)}
+                style={{ background: 'none', border: `1px solid ${C.hairline}`, borderRadius: '50%',
+                  width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: C.mocha }}>
+                <IconClose />
               </button>
             </div>
-          ) : (
-            <Link href="/auth"
-              style={{
-                background: C.bark, color: C.ivory, textDecoration: 'none',
-                padding: '8px 20px', borderRadius: 9999, fontFamily: FS, fontSize: 13, fontWeight: 500,
-              }}>
-              Sign In
-            </Link>
-          )}
+
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: 0, flex: 1 }}>
+              {navLinks.map(l => (
+                <Link key={l.href} href={l.href}
+                  style={{ textDecoration: 'none', fontFamily: FD, fontSize: 32, fontWeight: 400,
+                    color: location === l.href ? C.bark : C.cocoa,
+                    padding: '14px 0', borderBottom: `1px solid ${C.hairline}`,
+                    display: 'block' }}>
+                  {l.label}
+                </Link>
+              ))}
+              {isAuthenticated && user?.role === 'admin' && (
+                <Link href="/admin"
+                  style={{ textDecoration: 'none', fontFamily: FD, fontSize: 32, fontWeight: 400,
+                    color: C.cocoa, padding: '14px 0', borderBottom: `1px solid ${C.hairline}`, display: 'block' }}>
+                  Admin
+                </Link>
+              )}
+            </nav>
+
+            <div style={{ marginTop: 32 }}>
+              {isAuthenticated ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <Link href="/profile"
+                    style={{ fontFamily: FS, fontSize: 14, color: C.mocha, textDecoration: 'none' }}>
+                    {user?.name || user?.email}
+                  </Link>
+                  <button onClick={() => { logout(); setMenuOpen(false); }}
+                    style={{ background: 'none', border: `1px solid ${C.hairline}`, cursor: 'pointer',
+                      padding: '12px 16px', borderRadius: 9999, fontFamily: FS, fontSize: 14, color: C.mocha }}>
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth"
+                  style={{ display: 'block', background: C.bark, color: C.ivory, textDecoration: 'none',
+                    padding: '14px 24px', borderRadius: 9999, fontFamily: FS, fontSize: 14, fontWeight: 500,
+                    textAlign: 'center' }}>
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
+  const isMobile = useIsMobile();
+  const pad = isMobile ? 20 : 40;
   return (
-    <footer style={{ background: C.bark, color: C.ivory, padding: '64px 40px 40px' }}>
+    <footer style={{ background: C.bark, color: C.ivory, padding: `${isMobile ? 48 : 64}px ${pad}px 40px` }}>
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 40, marginBottom: 56,
-          borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: 56 }}>
-          <div>
+        <div style={{ display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr',
+          gap: isMobile ? 28 : 40, marginBottom: 48,
+          borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: 48 }}>
+          <div style={{ gridColumn: isMobile ? 'span 2' : 'span 1', marginBottom: isMobile ? 8 : 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <K2Logo size={22} color={C.ivory} />
               <span style={{ fontFamily: FD, fontSize: 16, color: C.ivory }}>K2 Coffee</span>
             </div>
-            <p style={{ fontFamily: FS, fontSize: 13, color: C.dust, lineHeight: 1.7, maxWidth: '26ch' }}>
+            <p style={{ fontFamily: FS, fontSize: 13, color: C.dust, lineHeight: 1.7, maxWidth: '36ch' }}>
               Specialty Yunnan Arabica. Every bag funds a named ministry partner.
             </p>
             <p style={{ fontFamily: FM, fontSize: 11, color: C.mocha, marginTop: 16, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -321,7 +439,8 @@ function Footer() {
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: 12 }}>
           <p style={{ fontFamily: FM, fontSize: 11, color: C.mocha, letterSpacing: '0.1em' }}>© 2026 K2 COFFEE MINISTRY</p>
           <div style={{ display: 'flex', gap: 24 }}>
             {['Privacy Policy', 'Terms of Service'].map(t => (

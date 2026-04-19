@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { C, FD, FS, FM, fmt } from "@/lib/tokens";
+import { useIsMobile } from "@/hooks/useMobile";
 
 interface CartItem {
   id: number;
@@ -27,6 +28,7 @@ export default function Cart() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<number | null>(null);
   const ministriesQuery = trpc.ministries.list.useQuery();
+  const isMobile = useIsMobile();
 
   const checkoutMutation = trpc.checkout.createSession.useMutation({
     onSuccess: (data) => {
@@ -100,26 +102,28 @@ export default function Cart() {
     );
   }
 
+  const pad = isMobile ? 20 : 40;
+
   return (
-    <div style={{ background: C.linen, minHeight: '100vh', padding: '64px 40px 96px' }}>
+    <div style={{ background: C.linen, minHeight: '100vh', padding: `${isMobile ? 40 : 64}px ${pad}px ${isMobile ? 64 : 96}px` }}>
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ marginBottom: 48 }}>
+        <div style={{ marginBottom: isMobile ? 32 : 48 }}>
           <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 12 }}>
             Your order
           </p>
-          <h1 style={{ fontFamily: FD, fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 400,
+          <h1 style={{ fontFamily: FD, fontSize: 'clamp(1.8rem,4vw,3.5rem)', fontWeight: 400,
             letterSpacing: '-0.025em', color: C.bark, lineHeight: 0.98, margin: 0 }}>
             Review & checkout.
           </h1>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 40, alignItems: 'flex-start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: isMobile ? 32 : 40, alignItems: 'flex-start' }}>
           {/* Items */}
           <div>
             <div style={{ borderTop: `1px solid ${C.hairline}` }}>
               {cart.map(item => (
-                <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto',
-                  gap: 20, padding: '24px 0', borderBottom: `1px solid ${C.hairline}`, alignItems: 'center' }}>
+                <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '64px 1fr' : '80px 1fr auto',
+                  gap: isMobile ? 14 : 20, padding: '20px 0', borderBottom: `1px solid ${C.hairline}`, alignItems: 'flex-start' }}>
                   <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', background: C.paper, flexShrink: 0 }}>
                     {item.imageUrl && (
                       <img src={item.imageUrl} alt={item.name}
@@ -127,8 +131,15 @@ export default function Cart() {
                     )}
                   </div>
                   <div>
-                    <div style={{ fontFamily: FD, fontSize: 20, fontWeight: 400, color: C.bark, marginBottom: 12 }}>
-                      {item.name}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+                      <div style={{ fontFamily: FD, fontSize: isMobile ? 17 : 20, fontWeight: 400, color: C.bark }}>
+                        {item.name}
+                      </div>
+                      {isMobile && (
+                        <div style={{ fontFamily: FM, fontSize: 14, color: C.bark, flexShrink: 0 }}>
+                          {fmt(item.price * item.quantity)}
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <button onClick={() => updateQty(item.id, item.quantity - 1)}
@@ -153,16 +164,18 @@ export default function Cart() {
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontFamily: FM, fontSize: 16, color: C.bark, textAlign: 'right' }}>
-                    {fmt(item.price * item.quantity)}
-                  </div>
+                  {!isMobile && (
+                    <div style={{ fontFamily: FM, fontSize: 16, color: C.bark, textAlign: 'right' }}>
+                      {fmt(item.price * item.quantity)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Summary */}
-          <div style={{ position: 'sticky', top: 80 }}>
+          <div style={isMobile ? {} : { position: 'sticky', top: 80 }}>
             <div style={{ background: C.paper, borderRadius: 20, padding: 32 }}>
               <h2 style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, margin: '0 0 24px' }}>
                 Order summary

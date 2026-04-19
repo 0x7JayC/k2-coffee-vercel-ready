@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderCancel from "./pages/OrderCancel";
 import ProductDetail from "./pages/ProductDetail";
+import Subscribe from "./pages/Subscribe";
 
 function Router() {
   return (
@@ -33,6 +34,7 @@ function Router() {
             <Route path="/ministries" component={Ministries} />
             <Route path="/profile" component={Profile} />
             <Route path="/admin" component={AdminDashboard} />
+            <Route path="/subscribe" component={Subscribe} />
             <Route path="/order/success" component={OrderSuccess} />
             <Route path="/order/cancel" component={OrderCancel} />
             <Route component={NotFound} />

@@ -3,6 +3,7 @@ import { Link, useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { C, FD, FS, FM, fmt } from "@/lib/tokens";
 import { K2Logo } from "@/components/Layout";
+import { useIsMobile } from "@/hooks/useMobile";
 
 function IconArrow({ size = 16 }: { size?: number }) {
   return (
@@ -32,6 +33,7 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<'notes' | 'origin' | 'brew'>('notes');
   const [imgLoaded, setImgLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   const productsQuery = trpc.products.list.useQuery();
   const products = productsQuery.data ?? [];
@@ -66,9 +68,11 @@ export default function ProductDetail() {
   const noteColors = ['#6b3820', '#7c2d44', '#b88957', '#e7a84d', '#dcd08a'];
   const BREW = { Coffee: '10g', Water: '200ml', Temp: '92°C', Time: '~3:30' };
 
+  const pad = isMobile ? 20 : 40;
+
   return (
     <div style={{ background: C.linen, minHeight: '100vh' }}>
-      <div style={{ borderBottom: `1px solid ${C.hairline}`, padding: '16px 40px' }}>
+      <div style={{ borderBottom: `1px solid ${C.hairline}`, padding: `16px ${pad}px` }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Link href="/shop"
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FM,
@@ -83,10 +87,10 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '56px 40px 96px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `${isMobile ? 32 : 56}px ${pad}px ${isMobile ? 64 : 96}px` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 32 : 80, alignItems: 'flex-start' }}>
           {/* Image */}
-          <div style={{ position: 'sticky', top: 80 }}>
+          <div style={isMobile ? {} : { position: 'sticky', top: 80 }}>
             <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 24, overflow: 'hidden', background: C.paper }}>
               {p.imageUrl ? (
                 <img src={p.imageUrl} alt={p.name} onLoad={() => setImgLoaded(true)}
@@ -253,7 +257,7 @@ export default function ProductDetail() {
             <h2 style={{ fontFamily: FD, fontSize: 32, fontWeight: 400, color: C.bark, margin: '0 0 40px' }}>
               You might also like
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: isMobile ? 16 : 28 }}>
               {related.map(r => {
                 const rNotes = r.tastingNotes ? r.tastingNotes.split(',').map(n => n.trim()).filter(Boolean) : [];
                 return (

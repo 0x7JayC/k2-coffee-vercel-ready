@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { C, FD, FS, FM, fmt } from "@/lib/tokens";
 import { K2Logo } from "@/components/Layout";
+import { useIsMobile } from "@/hooks/useMobile";
 
 function useReveal(delay = 0) {
   const ref = useRef<HTMLDivElement>(null);
@@ -132,7 +133,9 @@ function ShopCard({ p, i }: { p: any; i: number }) {
 export default function Shop() {
   const productsQuery = trpc.products.list.useQuery();
   const [filter, setFilter] = useState('All');
+  const isMobile = useIsMobile();
   const filters = ['All', 'Light', 'Medium', 'Dark', 'Washed', 'Natural', 'Honey'];
+  const pad = isMobile ? 20 : 40;
 
   const products = productsQuery.data ?? [];
   const filtered = filter === 'All' ? products : products.filter((p: any) =>
@@ -143,22 +146,22 @@ export default function Shop() {
 
   return (
     <div style={{ background: C.linen, minHeight: '100vh' }}>
-      <div style={{ borderBottom: `1px solid ${C.hairline}`, padding: '64px 40px 48px' }}>
+      <div style={{ borderBottom: `1px solid ${C.hairline}`, padding: `${isMobile ? 40 : 64}px ${pad}px ${isMobile ? 32 : 48}px` }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
           <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 14 }}>
             The harvest
           </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <h1 style={{ fontFamily: FD, fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 400,
-              letterSpacing: '-0.025em', color: C.bark, lineHeight: 0.95, maxWidth: '16ch', margin: 0 }}>
-              Our roasts.<br/>
-              <em style={{ fontStyle: 'italic', color: C.cocoa }}>One estate.</em>
-            </h1>
-            <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, maxWidth: '40ch', lineHeight: 1.72, textAlign: 'right' }}>
+          <h1 style={{ fontFamily: FD, fontSize: 'clamp(2.2rem,5vw,4.5rem)', fontWeight: 400,
+            letterSpacing: '-0.025em', color: C.bark, lineHeight: 0.95, maxWidth: '16ch', margin: '0 0 16px' }}>
+            Our roasts.<br/>
+            <em style={{ fontStyle: 'italic', color: C.cocoa }}>One estate.</em>
+          </h1>
+          {!isMobile && (
+            <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, maxWidth: '56ch', lineHeight: 1.72 }}>
               Specialty-grade Arabica from Yunnan's volcanic highlands. Cupped, scored, and roasted within 10 days of green arrival.
             </p>
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 36, flexWrap: 'wrap' }}>
+          )}
+          <div style={{ display: 'flex', gap: 8, marginTop: 24, flexWrap: 'wrap' }}>
             {filters.map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 style={{ padding: '6px 16px', borderRadius: 9999,
@@ -174,7 +177,7 @@ export default function Shop() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '56px 40px 96px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: `${isMobile ? 32 : 56}px ${pad}px ${isMobile ? 64 : 96}px` }}>
         {productsQuery.isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
             <div style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.dust }}>
@@ -182,7 +185,9 @@ export default function Shop() {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
+          <div style={{ display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(3, 1fr)',
+            gap: isMobile ? 16 : 32 }}>
             {filtered.map((p: any, i: number) => <ShopCard key={p.id} p={p} i={i} />)}
           </div>
         )}
@@ -203,8 +208,10 @@ export default function Shop() {
           </div>
         )}
 
-        <div style={{ marginTop: 80, padding: '40px', background: C.paper, borderRadius: 20,
-          display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 40, alignItems: 'center' }}>
+        <div style={{ marginTop: isMobile ? 48 : 80, padding: isMobile ? '28px 20px' : '40px',
+          background: C.paper, borderRadius: 20,
+          display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr',
+          gap: isMobile ? 16 : 40, alignItems: 'center' }}>
           <div>
             <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.crema, marginBottom: 12 }}>
               Origin note
