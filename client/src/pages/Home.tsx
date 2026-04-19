@@ -350,8 +350,8 @@ function HomeProductRail() {
 
 // ─── Brew Guide ───────────────────────────────────────────────────────────────
 const BREW_STEPS = [
-  { num: '01', title: 'Open & hang', body: 'Tear open the bag along the notch. Unfold the two ear tabs and hook them over the rim of your cup.', time: null },
-  { num: '02', title: 'Pre-wet', body: 'Pour ~20ml of 92°C water slowly over the grounds. This rinses the filter and wakes the coffee.', time: '0:00' },
+  { num: '01', title: 'Open', body: 'Tear open the bag along the notch.', time: null },
+  { num: '02', title: 'Hang', body: 'Unfold the two ear tabs. Hook them over the rim of your cup.', time: '0:00' },
   { num: '03', title: 'Bloom', body: "Wait 30 seconds. You'll see the grounds swell and release CO₂ — that's freshness you can see.", time: '0:30' },
   { num: '04', title: 'Pour in circles', body: 'Make 3 slow pours in a gentle spiral — centre outward. Total water: 200ml. Take your time between pours.', time: '1:00' },
   { num: '05', title: 'Drain & enjoy', body: 'Allow the coffee to fully drain through — around 3:00–3:30 total. Remove the bag, sit down, ask the question.', time: '3:30' },
