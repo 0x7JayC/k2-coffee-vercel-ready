@@ -350,11 +350,11 @@ function HomeProductRail() {
 
 // ─── Brew Guide ───────────────────────────────────────────────────────────────
 const BREW_STEPS = [
-  { num: '01', title: 'Open', body: 'Tear open the bag along the notch.', time: null },
-  { num: '02', title: 'Hang', body: 'Unfold the two ear tabs. Hook them over the rim of your cup.', time: '0:00' },
-  { num: '03', title: 'Bloom', body: "Wait 30 seconds. You'll see the grounds swell and release CO₂ — that's freshness you can see.", time: '0:30' },
-  { num: '04', title: 'Pour in circles', body: 'Make 3 slow pours in a gentle spiral — centre outward. Total water: 200ml. Take your time between pours.', time: '1:00' },
-  { num: '05', title: 'Drain & enjoy', body: 'Allow the coffee to fully drain through — around 3:00–3:30 total. Remove the bag, sit down, ask the question.', time: '3:30' },
+  { num: '01', title: 'Open', body: 'Tear open the bag along the notch.', time: null, image: '/brew-step-1.png' },
+  { num: '02', title: 'Hang', body: 'Unfold the two ear tabs. Hook them over the rim of your cup.', time: '0:00', image: '/brew-step-2.png' },
+  { num: '03', title: 'Bloom', body: "Wait 30 seconds. You'll see the grounds swell and release CO₂ — that's freshness you can see.", time: '0:30', image: '/brew-step-3.png' },
+  { num: '04', title: 'Pour in circles', body: 'Make 3 slow pours in a gentle spiral — centre outward. Total water: 200ml. Take your time between pours.', time: '1:00', image: '/brew-step-4.png' },
+  { num: '05', title: 'Drain & enjoy', body: 'Allow the coffee to fully drain through — around 3:00–3:30 total. Remove the bag, sit down, ask the question.', time: '3:30', image: '/brew-step-5.png' },
 ];
 
 function EarDripGuide() {
@@ -434,7 +434,13 @@ function EarDripGuide() {
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 24, overflow: 'hidden', background: C.paper }}>
-              {/* Replace with a real brew guide image per step */}
+              {BREW_STEPS.map((step, i) => (
+                <img key={i} src={step.image} alt={step.title}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                    filter: 'saturate(0.92) contrast(1.03)',
+                    opacity: activeStep === i ? 1 : 0,
+                    transition: 'opacity 500ms cubic-bezier(0.16,1,0.3,1)' }} />
+              ))}
               <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20,
                 background: 'rgba(250,245,234,0.90)', backdropFilter: 'blur(8px)',
                 borderRadius: 14, padding: '16px 20px', border: `1px solid ${C.hairline}` }}>
