@@ -56,73 +56,75 @@ function ShopCard({ p, i }: { p: any; i: number }) {
   return (
     <article ref={ref} style={{ ...style }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 20, overflow: 'hidden',
-        background: C.paper, transform: hov ? 'translateY(-5px)' : 'none',
-        transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1)' }}>
-        {p.imageUrl ? (
-          <img src={p.imageUrl} alt={p.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.92) contrast(1.02)',
-              transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 900ms cubic-bezier(0.16,1,0.3,1)' }}
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <K2Logo size={56} color={C.dust} />
-          </div>
-        )}
-        {p.weight && (
-          <div style={{ position: 'absolute', top: 14, left: 14 }}>
-            <span style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-              padding: '4px 10px', borderRadius: 9999, border: `1px solid ${C.hairline}`,
-              color: C.cocoa, background: 'rgba(250,245,234,0.88)', backdropFilter: 'blur(6px)' }}>
-              {p.weight}
-            </span>
-          </div>
-        )}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px',
-          opacity: hov ? 1 : 0, transform: hov ? 'none' : 'translateY(8px)',
-          transition: 'all 250ms ease' }}>
-          <button onClick={() => addToCart(p)}
-            style={{ width: '100%', padding: '12px', background: C.bark, color: C.ivory,
-              border: 'none', borderRadius: 12, fontFamily: FS, fontSize: 13, fontWeight: 500,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            Add to cart <IconArrow />
-          </button>
-        </div>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-          <h3 style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, margin: 0 }}>{p.name}</h3>
-          <div style={{ fontFamily: FM, fontSize: 16, color: C.bark, flexShrink: 0 }}>{fmt(p.price)}</div>
-        </div>
-        {notes.length > 0 && (
-          <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
-            {notes.slice(0, 3).map((n: string, j: number) => (
-              <span key={n} style={{ fontFamily: FS, fontSize: 12, color: C.mocha, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: noteColors[j % noteColors.length], display: 'inline-block' }}/>
-                {n}
-              </span>
-            ))}
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hairline}` }}>
+      <Link href={`/product/${p.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+        <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 20, overflow: 'hidden',
+          background: C.paper, transform: hov ? 'translateY(-5px)' : 'none',
+          transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1)' }}>
+          {p.imageUrl ? (
+            <img src={p.imageUrl} alt={p.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.92) contrast(1.02)',
+                transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 900ms cubic-bezier(0.16,1,0.3,1)' }}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <K2Logo size={56} color={C.dust} />
+            </div>
+          )}
           {p.weight && (
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>Weight</div>
-              <div style={{ fontFamily: FM, fontSize: 13, color: C.cocoa, marginTop: 2 }}>{p.weight}</div>
+            <div style={{ position: 'absolute', top: 14, left: 14 }}>
+              <span style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+                padding: '4px 10px', borderRadius: 9999, border: `1px solid ${C.hairline}`,
+                color: C.cocoa, background: 'rgba(250,245,234,0.88)', backdropFilter: 'blur(6px)' }}>
+                {p.weight}
+              </span>
             </div>
           )}
-          {p.description && (
-            <div style={{ flex: 2 }}>
-              <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>About</div>
-              <div style={{ fontFamily: FS, fontSize: 12, color: C.mocha, marginTop: 2, lineHeight: 1.5,
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {p.description}
-              </div>
-            </div>
-          )}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px',
+            opacity: hov ? 1 : 0, transform: hov ? 'none' : 'translateY(8px)',
+            transition: 'all 250ms ease' }}>
+            <button onClick={e => { e.preventDefault(); addToCart(p); }}
+              style={{ width: '100%', padding: '12px', background: C.bark, color: C.ivory,
+                border: 'none', borderRadius: 12, fontFamily: FS, fontSize: 13, fontWeight: 500,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              Add to cart <IconArrow />
+            </button>
+          </div>
         </div>
-      </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+            <h3 style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, margin: 0 }}>{p.name}</h3>
+            <div style={{ fontFamily: FM, fontSize: 16, color: C.bark, flexShrink: 0 }}>{fmt(p.price)}</div>
+          </div>
+          {notes.length > 0 && (
+            <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
+              {notes.slice(0, 3).map((n: string, j: number) => (
+                <span key={n} style={{ fontFamily: FS, fontSize: 12, color: C.mocha, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: noteColors[j % noteColors.length], display: 'inline-block' }}/>
+                  {n}
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hairline}` }}>
+            {p.weight && (
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>Weight</div>
+                <div style={{ fontFamily: FM, fontSize: 13, color: C.cocoa, marginTop: 2 }}>{p.weight}</div>
+              </div>
+            )}
+            {p.description && (
+              <div style={{ flex: 2 }}>
+                <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>About</div>
+                <div style={{ fontFamily: FS, fontSize: 12, color: C.mocha, marginTop: 2, lineHeight: 1.5,
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {p.description}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Link>
     </article>
   );
 }
