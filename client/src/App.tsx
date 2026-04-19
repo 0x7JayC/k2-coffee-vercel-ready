@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderCancel from "./pages/OrderCancel";
+import ProductDetail from "./pages/ProductDetail";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/shop" component={Shop} />
+            <Route path="/product/:id" component={ProductDetail} />
             <Route path="/cart" component={Cart} />
             <Route path="/ministries" component={Ministries} />
             <Route path="/profile" component={Profile} />

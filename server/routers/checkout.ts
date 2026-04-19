@@ -35,9 +35,11 @@ export const checkoutRouter = router({
         };
       } catch (error) {
         console.error("Checkout error:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to create checkout session";
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create checkout session",
+          message,
         });
       }
     }),

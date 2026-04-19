@@ -1,213 +1,184 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useLocation, Link } from "wouter";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Link } from "wouter";
-import { Loader2, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { C, FD, FS, FM, fmt } from "@/lib/tokens";
+import { K2Logo } from "@/components/Layout";
+
+const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  completed: { bg: 'rgba(74,51,36,0.08)', color: C.cocoa },
+  shipped:   { bg: 'rgba(196,151,100,0.15)', color: C.mocha },
+  paid:      { bg: 'rgba(43,29,20,0.08)', color: C.bark },
+  pending:   { bg: 'rgba(168,143,115,0.15)', color: C.dust },
+  cancelled: { bg: 'rgba(200,50,50,0.08)', color: '#8b2020' },
+};
 
 export default function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
-  const ordersQuery = trpc.orders.listMine.useQuery(undefined as any, {
-    enabled: isAuthenticated,
-  });
+  const [tab, setTab] = useState<'orders' | 'account'>('orders');
+
+  const ordersQuery = trpc.orders.listMine.useQuery(undefined as any, { enabled: isAuthenticated });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLocation("/auth");
-    }
+    if (!isAuthenticated) setLocation('/auth');
   }, [isAuthenticated]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("Logged out successfully");
-      setLocation("/");
-    } catch (error) {
-      toast.error("Failed to logout");
+      toast.success('Logged out');
+      setLocation('/');
+    } catch {
+      toast.error('Failed to logout');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      {/* Header */}
-      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-2">My Account</h1>
-          <p className="text-xl text-amber-100">
-            View your profile and order history
-          </p>
-        </div>
-      </section>
+    <div style={{ background: C.linen, minHeight: '100vh', padding: '64px 40px 96px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 48, alignItems: 'flex-start' }}>
 
-      {/* Content */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Profile Card */}
-            <Card className="p-6 h-fit">
-              <h2 className="text-2xl font-bold text-amber-900 mb-6">
-                Profile
-              </h2>
-
-              <div className="space-y-4 mb-6">
+          {/* Sidebar */}
+          <div>
+            <div style={{ background: C.paper, borderRadius: 20, padding: '32px 24px', marginBottom: 12 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: C.bark,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <K2Logo size={28} color={C.crema} />
+              </div>
+              <div style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, marginBottom: 4 }}>
+                {user?.name || 'Member'}
+              </div>
+              <div style={{ fontFamily: FM, fontSize: 11, color: C.mocha, letterSpacing: '0.1em' }}>
+                {user?.email}
+              </div>
+              <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 10, background: C.linen,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <p className="text-xs text-amber-600 font-medium uppercase">
-                    Name
-                  </p>
-                  <p className="text-lg font-semibold text-amber-900">
-                    {user?.name || "N/A"}
-                  </p>
+                  <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>
+                    Member since
+                  </div>
+                  <div style={{ fontFamily: FS, fontSize: 13, color: C.bark, marginTop: 2 }}>
+                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '—'}
+                  </div>
                 </div>
+                <div style={{ width: 1, height: 28, background: C.hairline }}/>
                 <div>
-                  <p className="text-xs text-amber-600 font-medium uppercase">
-                    Email
-                  </p>
-                  <p className="text-lg font-semibold text-amber-900">
-                    {user?.email || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-amber-600 font-medium uppercase">
-                    Role
-                  </p>
-                  <p className="text-lg font-semibold text-amber-900 capitalize">
-                    {user?.role || "customer"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-amber-600 font-medium uppercase">
-                    Member Since
-                  </p>
-                  <p className="text-lg font-semibold text-amber-900">
-                    {user?.createdAt
-                      ? new Date(user.createdAt).toLocaleDateString()
-                      : "N/A"}
-                  </p>
+                  <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>
+                    Orders
+                  </div>
+                  <div style={{ fontFamily: FS, fontSize: 13, color: C.bark, marginTop: 2 }}>
+                    {ordersQuery.data?.length ?? '—'}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <Button
-                onClick={handleLogout}
-                className="w-full bg-red-600 hover:bg-red-700"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </Card>
-
-            {/* Orders List */}
-            <div className="lg:col-span-2">
-              <h2 className="text-2xl font-bold text-amber-900 mb-6">
-                Order History
-              </h2>
-
-              {ordersQuery.isLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-amber-900" />
-                </div>
-              ) : ordersQuery.data && ordersQuery.data.length > 0 ? (
-                <div className="space-y-4">
-                  {ordersQuery.data.map((order) => (
-                    <Card key={order.id} className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                          <p className="text-xs text-amber-600 font-medium uppercase">
-                            Order ID
-                          </p>
-                          <p className="font-bold text-amber-900">
-                            #{order.id}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-amber-600 font-medium uppercase">
-                            Date
-                          </p>
-                          <p className="font-bold text-amber-900">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-amber-600 font-medium uppercase">
-                            Total
-                          </p>
-                          <p className="font-bold text-amber-900">
-                            £{(order.totalAmount / 100).toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-amber-600 font-medium uppercase">
-                            Status
-                          </p>
-                          <p
-                            className={`font-bold capitalize px-3 py-1 rounded text-xs inline-block ${
-                              order.status === "completed"
-                                ? "bg-green-100 text-green-800"
-                                : order.status === "shipped"
-                                ? "bg-blue-100 text-blue-800"
-                                : order.status === "paid"
-                                ? "bg-purple-100 text-purple-800"
-                                : order.status === "cancelled"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
-                            {order.status}
-                          </p>
-                        </div>
-                      </div>
-
-                      {order.items && (
-                        <div className="pt-4 border-t border-amber-200">
-                          <p className="text-xs text-amber-600 font-medium uppercase mb-2">
-                            Items
-                          </p>
-                          <div className="text-sm text-amber-900">
-                            {(() => {
-                              try {
-                                const items =
-                                  typeof order.items === "string"
-                                    ? JSON.parse(order.items)
-                                    : order.items;
-                                return (items as any[])
-                                  .map(
-                                    (item: any) =>
-                                      `${item.name} x${item.quantity}`
-                                  )
-                                  .join(", ");
-                              } catch {
-                                return "N/A";
-                              }
-                            })()}
-                          </div>
-                        </div>
-                      )}
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="p-8 text-center">
-                  <p className="text-amber-700 mb-4">
-                    You haven't placed any orders yet.
-                  </p>
-                  <Link href="/shop">
-                    <Button className="bg-amber-900 hover:bg-amber-800">
-                      Start Shopping
-                    </Button>
-                  </Link>
-                </Card>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[['orders', 'Order History'], ['account', 'Account Details']] .map(([id, label]) => (
+                <button key={id} onClick={() => setTab(id as 'orders' | 'account')}
+                  style={{ textAlign: 'left', padding: '12px 16px', borderRadius: 12,
+                    background: tab === id ? C.paper : 'transparent',
+                    border: 'none', cursor: 'pointer', fontFamily: FS, fontSize: 14,
+                    color: tab === id ? C.bark : C.mocha, fontWeight: tab === id ? 500 : 400,
+                    transition: 'all 200ms' }}>
+                  {label}
+                </button>
+              ))}
+              <button onClick={handleLogout}
+                style={{ textAlign: 'left', padding: '12px 16px', borderRadius: 12, background: 'transparent',
+                  border: 'none', cursor: 'pointer', fontFamily: FS, fontSize: 14, color: C.dust, marginTop: 8 }}>
+                Sign Out
+              </button>
             </div>
           </div>
+
+          {/* Content */}
+          <div>
+            {tab === 'orders' ? (
+              <div>
+                <h2 style={{ fontFamily: FD, fontSize: 32, fontWeight: 400, color: C.bark, margin: '0 0 32px' }}>
+                  Order History
+                </h2>
+                {ordersQuery.isLoading ? (
+                  <div style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.dust, padding: '40px 0' }}>
+                    Loading…
+                  </div>
+                ) : ordersQuery.data && ordersQuery.data.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {ordersQuery.data.map(order => {
+                      const st = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
+                      const items = (() => {
+                        try { return typeof order.items === 'string' ? JSON.parse(order.items) : order.items; }
+                        catch { return []; }
+                      })();
+                      return (
+                        <div key={order.id} style={{ background: C.paper, borderRadius: 20, padding: '28px 32px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 }}>
+                            {[['Order', `#${order.id}`], ['Date', new Date(order.createdAt).toLocaleDateString('en-GB')], ['Total', fmt(order.totalAmount)]].map(([k, v]) => (
+                              <div key={k}>
+                                <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 4 }}>{k}</div>
+                                <div style={{ fontFamily: FS, fontSize: 15, fontWeight: 600, color: C.bark }}>{v}</div>
+                              </div>
+                            ))}
+                            <div>
+                              <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 4 }}>Status</div>
+                              <span style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+                                padding: '4px 10px', borderRadius: 9999, background: st.bg, color: st.color }}>
+                                {order.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ borderTop: `1px solid ${C.hairline}`, paddingTop: 16 }}>
+                            <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 6 }}>Items</div>
+                            <div style={{ fontFamily: FS, fontSize: 14, color: C.bark }}>
+                              {(items as any[]).map((i: any) => `${i.name} ×${i.quantity ?? i.qty ?? 1}`).join(', ') || '—'}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ background: C.paper, borderRadius: 20, padding: '48px 32px', textAlign: 'center' }}>
+                    <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, marginBottom: 20 }}>
+                      No orders yet. Time to start.
+                    </p>
+                    <Link href="/shop"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px',
+                        background: C.bark, color: C.ivory, textDecoration: 'none', borderRadius: 9999,
+                        fontFamily: FS, fontSize: 14, fontWeight: 500 }}>
+                      Shop the harvest
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <h2 style={{ fontFamily: FD, fontSize: 32, fontWeight: 400, color: C.bark, margin: '0 0 32px' }}>
+                  Account Details
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  {[
+                    ['Full name', user?.name || '—'],
+                    ['Email', user?.email || '—'],
+                    ['Role', user?.role || 'customer'],
+                    ['Member since', user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '—'],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ background: C.paper, borderRadius: 16, padding: '24px' }}>
+                      <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.dust, marginBottom: 8 }}>{k}</div>
+                      <div style={{ fontFamily: FS, fontSize: 16, fontWeight: 500, color: C.bark }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

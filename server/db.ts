@@ -9,7 +9,7 @@ import {
   products,
   ministries,
   orders,
-} from "../drizzle/schema"
+} from "../drizzle/schema";
 import postgres from "postgres";
 import { ENV } from "./_core/env";
 
@@ -19,7 +19,7 @@ export function getDb() {
   if (!_db && ENV.databaseUrl) {
     try {
       const client = postgres(ENV.databaseUrl, { prepare: false, ssl: { rejectUnauthorized: false } });
-      _db = drizzle(client)
+      _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

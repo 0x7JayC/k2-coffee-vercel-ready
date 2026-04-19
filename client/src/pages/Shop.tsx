@@ -1,151 +1,224 @@
-import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { Loader2, ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import { C, FD, FS, FM, fmt } from "@/lib/tokens";
+import { K2Logo } from "@/components/Layout";
 
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageUrl?: string;
+function useReveal(delay = 0) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [vis, setVis] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVis(true); obs.disconnect(); } },
+      { rootMargin: '-40px 0px', threshold: 0.05 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, {
+    opacity: vis ? 1 : 0,
+    transform: vis ? 'none' : 'translateY(20px)',
+    transition: `opacity 600ms ${delay}ms cubic-bezier(0.16,1,0.3,1), transform 600ms ${delay}ms cubic-bezier(0.16,1,0.3,1)`,
+  } as React.CSSProperties] as const;
+}
+
+function IconArrow({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
+    </svg>
+  );
+}
+
+function addToCart(p: any) {
+  try {
+    const saved = localStorage.getItem('k2_cart');
+    const cart = saved ? JSON.parse(saved) : [];
+    const ex = cart.find((x: any) => x.id === p.id);
+    const updated = ex
+      ? cart.map((x: any) => x.id === p.id ? { ...x, quantity: x.quantity + 1 } : x)
+      : [...cart, { id: p.id, name: p.name, price: p.price, quantity: 1, imageUrl: p.imageUrl }];
+    localStorage.setItem('k2_cart', JSON.stringify(updated));
+    window.dispatchEvent(new Event('k2-cart-update'));
+    window.dispatchEvent(new CustomEvent('k2-show-ministry-drawer', { detail: { id: p.id, name: p.name } }));
+  } catch {}
+}
+
+function ShopCard({ p, i }: { p: any; i: number }) {
+  const [hov, setHov] = useState(false);
+  const [ref, style] = useReveal(i * 80);
+  const notes = p.tastingNotes ? p.tastingNotes.split(',').map((n: string) => n.trim()).filter(Boolean) : [];
+  const noteColors = ['#6b3820','#7c2d44','#b88957','#e7a84d','#dcd08a'];
+
+  return (
+    <article ref={ref} style={{ ...style }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{ position: 'relative', aspectRatio: '4/5', borderRadius: 20, overflow: 'hidden',
+        background: C.paper, transform: hov ? 'translateY(-5px)' : 'none',
+        transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1)' }}>
+        {p.imageUrl ? (
+          <img src={p.imageUrl} alt={p.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.92) contrast(1.02)',
+              transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 900ms cubic-bezier(0.16,1,0.3,1)' }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <K2Logo size={56} color={C.dust} />
+          </div>
+        )}
+        {p.weight && (
+          <div style={{ position: 'absolute', top: 14, left: 14 }}>
+            <span style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+              padding: '4px 10px', borderRadius: 9999, border: `1px solid ${C.hairline}`,
+              color: C.cocoa, background: 'rgba(250,245,234,0.88)', backdropFilter: 'blur(6px)' }}>
+              {p.weight}
+            </span>
+          </div>
+        )}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 14px',
+          opacity: hov ? 1 : 0, transform: hov ? 'none' : 'translateY(8px)',
+          transition: 'all 250ms ease' }}>
+          <button onClick={() => addToCart(p)}
+            style={{ width: '100%', padding: '12px', background: C.bark, color: C.ivory,
+              border: 'none', borderRadius: 12, fontFamily: FS, fontSize: 13, fontWeight: 500,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            Add to cart <IconArrow />
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+          <h3 style={{ fontFamily: FD, fontSize: 22, fontWeight: 400, color: C.bark, margin: 0 }}>{p.name}</h3>
+          <div style={{ fontFamily: FM, fontSize: 16, color: C.bark, flexShrink: 0 }}>{fmt(p.price)}</div>
+        </div>
+        {notes.length > 0 && (
+          <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
+            {notes.slice(0, 3).map((n: string, j: number) => (
+              <span key={n} style={{ fontFamily: FS, fontSize: 12, color: C.mocha, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: noteColors[j % noteColors.length], display: 'inline-block' }}/>
+                {n}
+              </span>
+            ))}
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.hairline}` }}>
+          {p.weight && (
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>Weight</div>
+              <div style={{ fontFamily: FM, fontSize: 13, color: C.cocoa, marginTop: 2 }}>{p.weight}</div>
+            </div>
+          )}
+          {p.description && (
+            <div style={{ flex: 2 }}>
+              <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust }}>About</div>
+              <div style={{ fontFamily: FS, fontSize: 12, color: C.mocha, marginTop: 2, lineHeight: 1.5,
+                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {p.description}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export default function Shop() {
   const productsQuery = trpc.products.list.useQuery();
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("k2_cart");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const [filter, setFilter] = useState('All');
+  const filters = ['All', 'Light', 'Medium', 'Dark', 'Washed', 'Natural', 'Honey'];
 
-  const handleAddToCart = (product: any) => {
-    const existingItem = cart.find((item) => item.id === product.id);
-
-    let updatedCart;
-    if (existingItem) {
-      updatedCart = cart.map((item) =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    } else {
-      updatedCart = [
-        ...cart,
-        {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: 1,
-          imageUrl: product.imageUrl,
-        },
-      ];
-    }
-
-    setCart(updatedCart);
-    localStorage.setItem("k2_cart", JSON.stringify(updatedCart));
-    toast.success(`${product.name} added to cart`);
-  };
+  const products = productsQuery.data ?? [];
+  const filtered = filter === 'All' ? products : products.filter((p: any) =>
+    p.name?.toLowerCase().includes(filter.toLowerCase()) ||
+    p.description?.toLowerCase().includes(filter.toLowerCase()) ||
+    p.tastingNotes?.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-amber-50 to-white${cart.length > 0 ? " pt-14" : ""}`}>
-      {/* Header */}
-      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">Shop Our Coffee</h1>
-          <p className="text-xl text-amber-100 max-w-2xl mx-auto">
-            100% Arabica beans from Yunnan, China — grown at altitude on volcanic red soil by smallholder farming families.
+    <div style={{ background: C.linen, minHeight: '100vh' }}>
+      <div style={{ borderBottom: `1px solid ${C.hairline}`, padding: '64px 40px 48px' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.mocha, marginBottom: 14 }}>
+            The harvest
           </p>
-        </div>
-      </section>
-
-      {/* Products Grid */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          {productsQuery.isLoading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-amber-900" />
-            </div>
-          ) : productsQuery.data && productsQuery.data.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productsQuery.data.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col !py-0 gap-0">
-                  {product.imageUrl && (
-                    <div className="h-64 overflow-hidden">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover block hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-amber-900 mb-1">{product.name}</h3>
-                    {product.weight && (
-                      <p className="text-xs uppercase tracking-wider text-amber-600 mb-3">{product.weight}</p>
-                    )}
-                    <p className="text-amber-700 text-sm leading-relaxed mb-4 flex-grow">
-                      {product.description}
-                    </p>
-                    {product.tastingNotes && (
-                      <p className="text-xs text-amber-600 font-medium mb-4">
-                        Notes: {product.tastingNotes}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between pt-4 border-t border-amber-100">
-                      <span className="text-2xl font-bold text-amber-900">
-                        £{(product.price / 100).toFixed(2)}
-                      </span>
-                      <Button
-                        onClick={() => handleAddToCart(product)}
-                        className="bg-amber-900 hover:bg-amber-800"
-                        size="sm"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <h2 className="text-2xl font-bold text-amber-900 mb-2">Coming Soon</h2>
-              <p className="text-amber-700">Our coffee selection is being curated. Check back soon.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Cart Summary */}
-      {cart.length > 0 && (
-        <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-amber-200 shadow-md">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <ShoppingCart className="w-6 h-6 text-amber-900" />
-              <div>
-                <p className="text-sm text-amber-700">
-                  {cart.length} item{cart.length !== 1 ? "s" : ""} in cart
-                </p>
-                <p className="text-lg font-bold text-amber-900">
-                  £{(cart.reduce((sum, item) => sum + item.price * item.quantity, 0) / 100).toFixed(2)}
-                </p>
-              </div>
-            </div>
-            <Link href="/cart">
-              <Button className="bg-amber-900 hover:bg-amber-800">
-                View Cart
-              </Button>
-            </Link>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <h1 style={{ fontFamily: FD, fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 400,
+              letterSpacing: '-0.025em', color: C.bark, lineHeight: 0.95, maxWidth: '16ch', margin: 0 }}>
+              Our roasts.<br/>
+              <em style={{ fontStyle: 'italic', color: C.cocoa }}>One estate.</em>
+            </h1>
+            <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, maxWidth: '40ch', lineHeight: 1.72, textAlign: 'right' }}>
+              Specialty-grade Arabica from Yunnan's volcanic highlands. Cupped, scored, and roasted within 10 days of green arrival.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 36, flexWrap: 'wrap' }}>
+            {filters.map(f => (
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ padding: '6px 16px', borderRadius: 9999,
+                  border: `1px solid ${filter === f ? C.bark : C.hairline}`,
+                  background: filter === f ? C.bark : 'transparent',
+                  color: filter === f ? C.ivory : C.mocha,
+                  fontFamily: FM, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
+                  cursor: 'pointer', transition: 'all 200ms' }}>
+                {f}
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '56px 40px 96px' }}>
+        {productsQuery.isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+            <div style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.dust }}>
+              Loading…
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
+            {filtered.map((p: any, i: number) => <ShopCard key={p.id} p={p} i={i} />)}
+          </div>
+        )}
+
+        {!productsQuery.isLoading && filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.dust, marginBottom: 12 }}>
+              No results
+            </p>
+            <h3 style={{ fontFamily: FD, fontSize: 28, color: C.bark, fontWeight: 400, margin: '0 0 20px' }}>
+              No roasts match that filter.
+            </h3>
+            <button onClick={() => setFilter('All')}
+              style={{ background: 'none', border: `1px solid ${C.hairline}`, borderRadius: 9999,
+                padding: '8px 20px', fontFamily: FS, fontSize: 13, color: C.mocha, cursor: 'pointer' }}>
+              Clear filter
+            </button>
+          </div>
+        )}
+
+        <div style={{ marginTop: 80, padding: '40px', background: C.paper, borderRadius: 20,
+          display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 40, alignItems: 'center' }}>
+          <div>
+            <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.crema, marginBottom: 12 }}>
+              Origin note
+            </p>
+            <h3 style={{ fontFamily: FD, fontSize: 28, fontWeight: 400, color: C.bark, lineHeight: 1.1, margin: 0 }}>
+              Why Yunnan?
+            </h3>
+          </div>
+          <p style={{ fontFamily: FS, fontSize: 15, color: C.mocha, lineHeight: 1.75, margin: 0 }}>
+            In 1904, Father Alfred Liétard planted the first Arabica trees in Yunnan — not for commerce,
+            but as part of a life given to a place and its people. Over a century later, those same highlands
+            are still growing Arabica. Quietly. Faithfully. Less than 5% of all coffee grown worldwide earns
+            specialty grade. Ours does.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

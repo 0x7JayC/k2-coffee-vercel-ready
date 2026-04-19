@@ -7,7 +7,7 @@ export default function OrderCancel() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Header */}
-      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-16 sm:py-24">
+      <section className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-2">Order Cancelled</h1>
           <p className="text-xl text-amber-100">Your payment was not processed</p>
@@ -15,7 +15,7 @@ export default function OrderCancel() {
       </section>
 
       {/* Cancellation Message */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <Card className="p-8 text-center">
             <div className="flex justify-center mb-6">

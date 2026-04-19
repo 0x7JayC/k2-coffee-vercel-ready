@@ -1,292 +1,411 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Menu, X, ShoppingCart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { useState, useEffect, useRef } from "react";
+import { trpc } from "@/lib/trpc";
+import { C, FD, FS, FM } from "@/lib/tokens";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function Layout({ children }: LayoutProps) {
-  const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+// ─── Icons ────────────────────────────────────────────────────────────────────
+function IconArrow({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
+    </svg>
+  );
+}
+function IconClose({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+    </svg>
+  );
+}
 
-  // Track cart count from localStorage
+// ─── K2 Logo ──────────────────────────────────────────────────────────────────
+export function K2Logo({ size = 28, color = C.bark }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size * 0.72} viewBox="175 240 425 305" aria-label="K2 Coffee">
+      <path fill={color} d="M559.45,510.26l-95.49-150.6-59.05,93.01c-11.31,11.27-30,2.45-27.49-13.71.35-2.28,2.02-4.69,3.08-6.76,19.12-37.03,48.91-73.16,68.88-110.27,6.69-10.16,20.51-10.18,27.22,0l125.98,195.88c5.14,9.05.94,20.08-8.86,23.27l-383.24.71c-12.1-.56-19.1-13.29-13.07-23.98l157.87-252.58c6.47-9.1,19.17-9.46,26.01-.56,9.8,18.91,25.91,37.54,35.25,56.29,8.9,17.88-7.8,32.06-23.67,20.99l-23.31-36.8-2.03-.61-127.98,205.71h319.89Z"/>
+    </svg>
+  );
+}
+
+// ─── Ministry Drawer ──────────────────────────────────────────────────────────
+interface Ministry {
+  id: number;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+}
+interface DrawerProduct {
+  id: number;
+  name: string;
+}
+
+function MinistryDrawer({
+  product,
+  ministries,
+  onClose,
+  onConfirm,
+}: {
+  product: DrawerProduct;
+  ministries: Ministry[];
+  onClose: () => void;
+  onConfirm: (ministryId: number | null) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
-    const updateCartCount = () => {
+    requestAnimationFrame(() => setOpen(true));
+  }, []);
+
+  const handleConfirm = () => {
+    if (!selected) return;
+    onConfirm(selected);
+    setOpen(false);
+    setTimeout(onClose, 350);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(onClose, 350);
+  };
+  const handleSkip = () => {
+    onConfirm(null);
+    setOpen(false);
+    setTimeout(onClose, 350);
+  };
+
+  const ministry = ministries.find(m => m.id === selected);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div onClick={handleClose} style={{
+        position: 'absolute', inset: 0,
+        background: `rgba(43,29,20,${open ? 0.45 : 0})`,
+        transition: 'background 350ms ease', backdropFilter: 'blur(2px)',
+      }}/>
+      <div style={{
+        position: 'relative', background: C.ivory, borderRadius: '24px 24px 0 0',
+        padding: '32px 40px 40px', maxHeight: '72vh', overflowY: 'auto',
+        transform: open ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 350ms cubic-bezier(0.16,1,0.3,1)',
+        boxShadow: '0 -8px 40px rgba(43,29,20,0.12)',
+      }}>
+        <div style={{ width: 36, height: 4, background: C.hairline, borderRadius: 2, margin: '0 auto 28px' }}/>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div>
+            <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.mocha, marginBottom: 6 }}>
+              Added: {product.name}
+            </p>
+            <h2 style={{ fontFamily: FD, fontSize: 28, fontWeight: 400, color: C.bark, letterSpacing: '-0.02em' }}>
+              Now, pick a ministry.
+            </h2>
+            <p style={{ fontFamily: FS, fontSize: 14, color: C.mocha, marginTop: 6, lineHeight: 1.6, maxWidth: '52ch' }}>
+              100% of profit funds the partner you choose. Not a vague cause — a specific name, a specific place.
+            </p>
+          </div>
+          <button onClick={handleClose} style={{
+            background: 'none', border: `1px solid ${C.hairline}`, borderRadius: '50%',
+            width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: C.mocha, flexShrink: 0, marginLeft: 16,
+          }}>
+            <IconClose />
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(ministries.length, 3)},1fr)`, gap: 12, margin: '24px 0' }}>
+          {ministries.map(m => (
+            <button key={m.id} onClick={() => setSelected(m.id)}
+              style={{
+                textAlign: 'left', background: selected === m.id ? C.paper : 'white',
+                border: `1.5px solid ${selected === m.id ? C.crema : C.hairline}`,
+                borderRadius: 16, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                transition: 'all 200ms', outline: 'none',
+              }}>
+              {m.imageUrl && (
+                <div style={{ height: 120, overflow: 'hidden' }}>
+                  <img src={m.imageUrl} alt={m.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'saturate(0.9) contrast(1.02)' }}/>
+                </div>
+              )}
+              <div style={{ padding: '14px 16px' }}>
+                {selected === m.id && (
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.crema, display: 'inline-block', marginRight: 6, marginBottom: 4 }}/>
+                )}
+                <p style={{ fontFamily: FS, fontSize: 13, fontWeight: 600, color: C.bark, marginBottom: 4 }}>{m.name}</p>
+                {m.description && (
+                  <p style={{ fontFamily: FS, fontSize: 12, color: C.mocha, lineHeight: 1.5 }}>{m.description}</p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={handleConfirm} disabled={!selected}
+            style={{
+              flex: 1, background: selected ? C.bark : C.hairline, color: selected ? C.ivory : C.dust,
+              border: 'none', borderRadius: 9999, padding: '14px 24px', fontFamily: FS, fontSize: 14, fontWeight: 500,
+              cursor: selected ? 'pointer' : 'not-allowed', transition: 'all 200ms',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+            {selected ? `Confirm — fund ${ministry?.name}` : 'Select a ministry above'}
+            {selected && <IconArrow size={16} />}
+          </button>
+          <button onClick={handleSkip}
+            style={{
+              background: 'none', border: `1px solid ${C.hairline}`, borderRadius: 9999,
+              padding: '14px 20px', fontFamily: FS, fontSize: 13, color: C.mocha, cursor: 'pointer',
+            }}>
+            Skip for now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+export function Toast({ message, onDone }: { message: string; onDone: () => void }) {
+  const [vis, setVis] = useState(false);
+  useEffect(() => {
+    requestAnimationFrame(() => setVis(true));
+    const t = setTimeout(() => { setVis(false); setTimeout(onDone, 400); }, 2800);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div style={{
+      position: 'fixed', bottom: 32, left: '50%',
+      transform: `translateX(-50%) translateY(${vis ? 0 : 16}px)`,
+      opacity: vis ? 1 : 0, transition: 'all 380ms cubic-bezier(0.16,1,0.3,1)',
+      background: C.bark, color: C.ivory, padding: '12px 24px', borderRadius: 9999,
+      fontFamily: FS, fontSize: 13, fontWeight: 500, zIndex: 300, whiteSpace: 'nowrap',
+      boxShadow: '0 4px 24px rgba(43,29,20,0.2)',
+    }}>
+      {message}
+    </div>
+  );
+}
+
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+function Nav({ cartCount }: { cartCount: number }) {
+  const { user, isAuthenticated, logout } = useAuth();
+  const [location, navigate] = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navLinks = [
+    { label: 'Shop', href: '/shop' },
+    { label: 'Ministries', href: '/ministries' },
+  ];
+
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      background: C.linen,
+      borderBottom: `1px solid ${scrolled ? C.hairline : 'transparent'}`,
+      transition: 'border-color 300ms ease',
+    }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <K2Logo size={42} />
+          <span style={{ fontFamily: FD, fontSize: 21, fontWeight: 400, color: C.bark, letterSpacing: '-0.015em' }}>
+            K2 Coffee
+          </span>
+        </Link>
+
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+          {navLinks.map(l => (
+            <Link key={l.href} href={l.href}
+              style={{
+                textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500,
+                color: location === l.href ? C.bark : C.mocha, transition: 'color 200ms',
+              }}>
+              {l.label}
+            </Link>
+          ))}
+          {isAuthenticated && user?.role === 'admin' && (
+            <Link href="/admin" style={{ textDecoration: 'none', fontFamily: FS, fontSize: 14, fontWeight: 500, color: C.mocha }}>
+              Admin
+            </Link>
+          )}
+        </nav>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <Link href="/cart" style={{ position: 'relative', textDecoration: 'none', display: 'flex', padding: 4 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.bark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            {cartCount > 0 && (
+              <span style={{
+                position: 'absolute', top: -4, right: -4, background: C.crema, color: C.bark,
+                width: 16, height: 16, borderRadius: '50%', fontSize: 9, fontFamily: FM,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600,
+              }}>
+                {cartCount}
+              </span>
+            )}
+          </Link>
+
+          {isAuthenticated ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Link href="/profile"
+                style={{ fontFamily: FS, fontSize: 13, color: C.mocha, textDecoration: 'none' }}>
+                {user?.name || user?.email}
+              </Link>
+              <button onClick={() => logout()}
+                style={{ background: 'none', border: `1px solid ${C.hairline}`, cursor: 'pointer',
+                  padding: '8px 16px', borderRadius: 9999, fontFamily: FS, fontSize: 13, color: C.mocha }}>
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link href="/auth"
+              style={{
+                background: C.bark, color: C.ivory, textDecoration: 'none',
+                padding: '8px 20px', borderRadius: 9999, fontFamily: FS, fontSize: 13, fontWeight: 500,
+              }}>
+              Sign In
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+function Footer() {
+  return (
+    <footer style={{ background: C.bark, color: C.ivory, padding: '64px 40px 40px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 40, marginBottom: 56,
+          borderBottom: `1px solid rgba(255,255,255,0.08)`, paddingBottom: 56 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <K2Logo size={22} color={C.ivory} />
+              <span style={{ fontFamily: FD, fontSize: 16, color: C.ivory }}>K2 Coffee</span>
+            </div>
+            <p style={{ fontFamily: FS, fontSize: 13, color: C.dust, lineHeight: 1.7, maxWidth: '26ch' }}>
+              Specialty Yunnan Arabica. Every bag funds a named ministry partner.
+            </p>
+            <p style={{ fontFamily: FM, fontSize: 11, color: C.mocha, marginTop: 16, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Rooted in Humility. Rising with Purpose.
+            </p>
+          </div>
+          {[
+            { title: 'Shop', links: ['The Harvest', 'Subscriptions', 'Gift Cards'] },
+            { title: 'Mission', links: ['Ministries', 'Impact Reports', 'Our Story'] },
+            { title: 'Support', links: ['FAQ', 'Shipping', 'Contact'] },
+          ].map(col => (
+            <div key={col.title}>
+              <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.dust, marginBottom: 16 }}>
+                {col.title}
+              </p>
+              {col.links.map(t => (
+                <p key={t} style={{ fontFamily: FS, fontSize: 13, color: 'rgba(250,245,234,0.6)', marginBottom: 10, cursor: 'pointer' }}>{t}</p>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontFamily: FM, fontSize: 11, color: C.mocha, letterSpacing: '0.1em' }}>© 2026 K2 COFFEE MINISTRY</p>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {['Privacy Policy', 'Terms of Service'].map(t => (
+              <span key={t} style={{ fontFamily: FM, fontSize: 11, color: C.mocha, letterSpacing: '0.08em', cursor: 'pointer' }}>{t}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+export default function Layout({ children }: LayoutProps) {
+  const [cartCount, setCartCount] = useState(0);
+  const [drawerProduct, setDrawerProduct] = useState<DrawerProduct | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const ministriesQuery = trpc.ministries.list.useQuery();
+
+  useEffect(() => {
+    const update = () => {
       try {
-        const saved = localStorage.getItem("k2_cart");
+        const saved = localStorage.getItem('k2_cart');
         if (saved) {
           const items = JSON.parse(saved);
-          setCartCount(items.reduce((sum: number, item: any) => sum + item.quantity, 0));
+          setCartCount(items.reduce((s: number, i: any) => s + (i.quantity ?? i.qty ?? 0), 0));
         } else {
           setCartCount(0);
         }
-      } catch {
-        setCartCount(0);
-      }
+      } catch { setCartCount(0); }
     };
-
-    updateCartCount();
-    window.addEventListener("storage", updateCartCount);
-    // Custom event for same-tab updates
-    window.addEventListener("k2-cart-update", updateCartCount);
+    update();
+    window.addEventListener('storage', update);
+    window.addEventListener('k2-cart-update', update);
     return () => {
-      window.removeEventListener("storage", updateCartCount);
-      window.removeEventListener("k2-cart-update", updateCartCount);
+      window.removeEventListener('storage', update);
+      window.removeEventListener('k2-cart-update', update);
     };
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    setMobileMenuOpen(false);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as DrawerProduct;
+      setDrawerProduct(detail);
+    };
+    window.addEventListener('k2-show-ministry-drawer', handler);
+    return () => window.removeEventListener('k2-show-ministry-drawer', handler);
+  }, []);
+
+  const handleMinistryConfirm = (ministryId: number | null) => {
+    if (ministryId !== null) {
+      localStorage.setItem('k2_ministry', String(ministryId));
+      const m = ministriesQuery.data?.find(x => x.id === ministryId);
+      setToast(m ? `Added · funding ${m.name}` : 'Added to cart');
+    } else {
+      setToast('Added to cart');
+    }
+    setDrawerProduct(null);
   };
 
+  const ministries: Ministry[] = (ministriesQuery.data ?? []).map(m => ({
+    id: m.id,
+    name: m.name,
+    description: m.description ?? null,
+    imageUrl: m.imageUrl ?? null,
+  }));
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-amber-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/">
-              <div className="flex items-center gap-2 cursor-pointer">
-                <svg width="32" height="32" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#78350f" d="M559.45,510.26l-95.49-150.6-59.05,93.01c-11.31,11.27-30,2.45-27.49-13.71.35-2.28,2.02-4.69,3.08-6.76,19.12-37.03,48.91-73.16,68.88-110.27,6.69-10.16,20.51-10.18,27.22,0l125.98,195.88c5.14,9.05.94,20.08-8.86,23.27l-383.24.71c-12.1-.56-19.1-13.29-13.07-23.98l157.87-252.58c6.47-9.1,19.17-9.46,26.01-.56,9.8,18.91,25.91,37.54,35.25,56.29,8.9,17.88-7.8,32.06-23.67,20.99l-23.31-36.8-2.03-.61-127.98,205.71h319.89Z"/>
-                </svg>
-                <span className="font-bold text-xl text-amber-900">
-                  K2 Coffee
-                </span>
-              </div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              <Link
-                href="/shop"
-                className="text-amber-900 hover:text-amber-700 font-medium"
-              >
-                Shop
-              </Link>
-              <Link
-                href="/ministries"
-                className="text-amber-900 hover:text-amber-700 font-medium"
-              >
-                Ministries
-              </Link>
-              {isAuthenticated && user?.role === "admin" && (
-                <Link
-                  href="/admin"
-                  className="text-amber-900 hover:text-amber-700 font-medium"
-                >
-                  Admin
-                </Link>
-              )}
-            </nav>
-
-            {/* Right Section */}
-            <div className="hidden md:flex items-center gap-4">
-              {/* Cart */}
-              <Link href="/cart">
-                <Button variant="ghost" size="sm" className="relative">
-                  <ShoppingCart className="w-5 h-5 text-amber-900" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-amber-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-
-              {isAuthenticated ? (
-                <>
-                  <span className="text-sm text-amber-700">
-                    {user?.name || user?.email}
-                  </span>
-                  <Link href="/profile">
-                    <Button variant="outline" size="sm" className="mr-2">
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button onClick={handleLogout} variant="outline" size="sm">
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Link href="/auth">
-                  <Button
-                    className="bg-amber-900 hover:bg-amber-800"
-                    size="sm"
-                  >
-                    Sign In
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="flex items-center gap-2 md:hidden">
-              <Link href="/cart">
-                <Button variant="ghost" size="sm" className="relative">
-                  <ShoppingCart className="w-5 h-5 text-amber-900" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-amber-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-amber-900" />
-                ) : (
-                  <Menu className="w-6 h-6 text-amber-900" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation */}
-          {mobileMenuOpen && (
-            <div className="md:hidden pb-4 space-y-3">
-              <Link
-                href="/shop"
-                className="block text-amber-900 hover:text-amber-700 font-medium py-2"
-              >
-                Shop
-              </Link>
-              <Link
-                href="/ministries"
-                className="block text-amber-900 hover:text-amber-700 font-medium py-2"
-              >
-                Ministries
-              </Link>
-              {isAuthenticated && user?.role === "admin" && (
-                <Link
-                  href="/admin"
-                  className="block text-amber-900 hover:text-amber-700 font-medium py-2"
-                >
-                  Admin
-                </Link>
-              )}
-              <div className="pt-2 space-y-2">
-                {isAuthenticated ? (
-                  <>
-                    <p className="text-sm text-amber-700 py-2">
-                      {user?.name || user?.email}
-                    </p>
-                    <Link href="/profile">
-                      <Button variant="outline" size="sm" className="w-full mb-2">
-                        Profile
-                      </Button>
-                    </Link>
-                    <Button
-                      onClick={handleLogout}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <Link href="/auth" className="block">
-                    <Button
-                      className="w-full bg-amber-900 hover:bg-amber-800"
-                      size="sm"
-                    >
-                      Sign In
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-grow">{children}</main>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <svg width="24" height="24" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#ffffff" d="M559.45,510.26l-95.49-150.6-59.05,93.01c-11.31,11.27-30,2.45-27.49-13.71.35-2.28,2.02-4.69,3.08-6.76,19.12-37.03,48.91-73.16,68.88-110.27,6.69-10.16,20.51-10.18,27.22,0l125.98,195.88c5.14,9.05.94,20.08-8.86,23.27l-383.24.71c-12.1-.56-19.1-13.29-13.07-23.98l157.87-252.58c6.47-9.1,19.17-9.46,26.01-.56,9.8,18.91,25.91,37.54,35.25,56.29,8.9,17.88-7.8,32.06-23.67,20.99l-23.31-36.8-2.03-.61-127.98,205.71h319.89Z"/>
-                </svg>
-                <span className="font-bold text-lg">K2 Coffee</span>
-              </div>
-              <p className="text-sm text-amber-100">
-                Premium Yunnan Arabica supporting global ministries
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3">Shop</h3>
-              <ul className="space-y-2 text-sm text-amber-100">
-                <li>
-                  <Link href="/shop" className="hover:text-white">
-                    Coffee
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/ministries" className="hover:text-white">
-                    Ministries
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3">About</h3>
-              <ul className="space-y-2 text-sm text-amber-100">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Our Story
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Impact
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3">Support</h3>
-              <ul className="space-y-2 text-sm text-amber-100">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    FAQ
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-amber-700 pt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-amber-100">
-              <p>&copy; 2026 K2 Coffee Ministry. All rights reserved.</p>
-              <div className="flex gap-6 md:justify-end">
-                <a href="#" className="hover:text-white">
-                  Privacy Policy
-                </a>
-                <a href="#" className="hover:text-white">
-                  Terms of Service
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: C.linen }}>
+      <div className="k2-grain" aria-hidden />
+      <Nav cartCount={cartCount} />
+      <main style={{ flex: 1 }} className="k2-page-enter">
+        {children}
+      </main>
+      <Footer />
+      {drawerProduct && (
+        <MinistryDrawer
+          product={drawerProduct}
+          ministries={ministries}
+          onClose={() => setDrawerProduct(null)}
+          onConfirm={handleMinistryConfirm}
+        />
+      )}
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </div>
   );
 }
