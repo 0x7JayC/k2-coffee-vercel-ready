@@ -108,9 +108,10 @@ function Hero() {
         </div>
 
         <div style={{ position: 'relative', marginRight: -40 }}>
-          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '0 0 0 32px',
-            background: C.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* Replace with a real product/brand image */}
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '0 0 0 32px' }}>
+            <img src="/hero-image.jpg" alt="Coffee cherries on the branch, Yunnan"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+                filter: 'saturate(0.9) contrast(1.05)' }} />
           </div>
           <div style={{ position: 'absolute', left: 32, bottom: 48, display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 18px', borderRadius: 9999, background: 'rgba(250,245,234,0.88)',
