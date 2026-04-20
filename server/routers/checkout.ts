@@ -17,6 +17,7 @@ export const checkoutRouter = router({
         ),
         ministryId: z.number(),
         totalAmount: z.number().int().positive(),
+        shippingMethod: z.enum(["standard", "collection"]).default("standard"),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -25,6 +26,7 @@ export const checkoutRouter = router({
           items: input.items,
           ministryId: input.ministryId,
           totalAmount: input.totalAmount,
+          shippingMethod: input.shippingMethod,
           userEmail: ctx.user.email || "",
           userId: ctx.user.id,
         });
