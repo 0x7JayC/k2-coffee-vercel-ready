@@ -16,9 +16,13 @@ export interface CheckoutRequest {
   }>;
   ministryId: number;
   totalAmount: number;
+  shippingMethod?: "standard" | "collection";
   userEmail: string;
   userId?: number;
 }
+
+const FREE_SHIPPING_THRESHOLD = 5900; // £59
+const STANDARD_SHIPPING = 399; // £3.99
 
 export async function createCheckoutSession(req: CheckoutRequest) {
   if (!stripe) {
@@ -28,6 +32,7 @@ export async function createCheckoutSession(req: CheckoutRequest) {
   }
 
   const { items, ministryId, totalAmount, userEmail, userId } = req;
+  const shippingMethod = req.shippingMethod ?? "standard";
 
   if (!items || items.length === 0) {
     throw new Error("No items in cart");
@@ -50,6 +55,28 @@ export async function createCheckoutSession(req: CheckoutRequest) {
     quantity: item.quantity,
   }));
 
+  // Compute shipping server-side from the trusted subtotal.
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const isCollection = shippingMethod === "collection";
+  const qualifiesFree = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const shippingAmount = isCollection || qualifiesFree ? 0 : STANDARD_SHIPPING;
+
+  const shippingRateLabel = isCollection
+    ? "Local collection"
+    : qualifiesFree
+    ? "Free delivery (orders over £59)"
+    : "Standard delivery";
+
+  const shippingOptions: Stripe.Checkout.SessionCreateParams.ShippingOption[] = [
+    {
+      shipping_rate_data: {
+        type: "fixed_amount",
+        fixed_amount: { amount: shippingAmount, currency: "gbp" },
+        display_name: shippingRateLabel,
+      },
+    },
+  ];
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: lineItems,
@@ -57,15 +84,22 @@ export async function createCheckoutSession(req: CheckoutRequest) {
     success_url: `${origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/order/cancel`,
     customer_email: userEmail,
-    shipping_address_collection: {
-      allowed_countries: ["GB", "US", "AU", "CA", "NZ", "IE", "SG", "HK"],
-    },
+    ...(isCollection
+      ? {}
+      : {
+          shipping_address_collection: {
+            allowed_countries: ["GB", "US", "AU", "CA", "NZ", "IE", "SG", "HK"],
+          },
+        }),
+    shipping_options: shippingOptions,
     phone_number_collection: {
       enabled: true,
     },
     metadata: {
       userId: userId?.toString() || "",
       ministryId: ministryId.toString(),
+      shippingMethod,
+      shippingAmount: shippingAmount.toString(),
       items: JSON.stringify(
         items.map((i) => ({
           id: i.id,

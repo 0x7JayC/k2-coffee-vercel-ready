@@ -23,10 +23,15 @@ function IconArrow({ size = 16 }: { size?: number }) {
   );
 }
 
+const FREE_SHIPPING_THRESHOLD = 5900; // £59 in pence
+const STANDARD_SHIPPING = 399; // £3.99 in pence
+type ShippingMethod = 'standard' | 'collection';
+
 export default function Cart() {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<number | null>(null);
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard');
   const ministriesQuery = trpc.ministries.list.useQuery();
   const isMobile = useIsMobile();
 
@@ -72,11 +77,16 @@ export default function Cart() {
     checkoutMutation.mutate({
       items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price })),
       ministryId: selectedMinistry,
-      totalAmount: cart.reduce((s, i) => s + i.price * i.quantity, 0),
+      totalAmount: total,
+      shippingMethod,
     });
   };
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const qualifiesFree = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const shippingCost =
+    shippingMethod === 'collection' ? 0 : qualifiesFree ? 0 : STANDARD_SHIPPING;
+  const total = subtotal + shippingCost;
   const ministry = ministriesQuery.data?.find(m => m.id === selectedMinistry);
 
   if (cart.length === 0) {
@@ -223,18 +233,61 @@ export default function Cart() {
                 )}
               </div>
 
+              {/* Delivery method */}
+              <div style={{ marginBottom: 20, padding: 16, borderRadius: 12, background: C.linen, border: `1px solid ${C.hairline}` }}>
+                <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 10 }}>
+                  Delivery
+                </div>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10, cursor: 'pointer' }}>
+                  <input type="radio" name="shipping" value="standard"
+                    checked={shippingMethod === 'standard'}
+                    onChange={() => setShippingMethod('standard')}
+                    style={{ accentColor: C.crema, marginTop: 3, flexShrink: 0 }}/>
+                  <span style={{ fontFamily: FS, fontSize: 13, color: C.bark, flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <span>Standard delivery</span>
+                      <span style={{ fontFamily: FM, color: qualifiesFree ? C.crema : C.bark }}>
+                        {qualifiesFree ? 'FREE' : fmt(STANDARD_SHIPPING)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 11, color: C.mocha, marginTop: 2 }}>
+                      {qualifiesFree ? 'Free over £59' : `Free over £59 (add ${fmt(FREE_SHIPPING_THRESHOLD - subtotal)} more)`}
+                    </div>
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                  <input type="radio" name="shipping" value="collection"
+                    checked={shippingMethod === 'collection'}
+                    onChange={() => setShippingMethod('collection')}
+                    style={{ accentColor: C.crema, marginTop: 3, flexShrink: 0 }}/>
+                  <span style={{ fontFamily: FS, fontSize: 13, color: C.bark, flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <span>Local collection</span>
+                      <span style={{ fontFamily: FM, color: C.crema }}>FREE</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: C.mocha, marginTop: 2 }}>
+                      Pick up from us — no postage charge.
+                    </div>
+                  </span>
+                </label>
+              </div>
+
               <div style={{ borderTop: `1px solid ${C.hairline}`, paddingTop: 20, marginBottom: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                   <span style={{ fontFamily: FS, fontSize: 14, color: C.mocha }}>Subtotal</span>
                   <span style={{ fontFamily: FM, fontSize: 14, color: C.bark }}>{fmt(subtotal)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <span style={{ fontFamily: FS, fontSize: 14, color: C.mocha }}>Shipping</span>
-                  <span style={{ fontFamily: FM, fontSize: 12, color: C.dust }}>Calculated at checkout</span>
+                  <span style={{ fontFamily: FS, fontSize: 14, color: C.mocha }}>
+                    {shippingMethod === 'collection' ? 'Collection' : 'Shipping'}
+                  </span>
+                  <span style={{ fontFamily: FM, fontSize: 14, color: shippingCost === 0 ? C.crema : C.bark }}>
+                    {shippingCost === 0 ? 'FREE' : fmt(shippingCost)}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${C.hairline}`, paddingTop: 14, marginTop: 14 }}>
                   <span style={{ fontFamily: FD, fontSize: 18, color: C.bark }}>Total</span>
-                  <span style={{ fontFamily: FM, fontSize: 18, color: C.bark }}>{fmt(subtotal)}</span>
+                  <span style={{ fontFamily: FM, fontSize: 18, color: C.bark }}>{fmt(total)}</span>
                 </div>
               </div>
 
