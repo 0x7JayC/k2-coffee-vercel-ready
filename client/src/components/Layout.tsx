@@ -228,6 +228,7 @@ function Nav({ cartCount }: { cartCount: number }) {
 
   const navLinks = [
     { label: 'Shop', href: '/shop' },
+    { label: 'Subscriptions', href: '/subscribe' },
     { label: 'Ministries', href: '/ministries' },
   ];
 
