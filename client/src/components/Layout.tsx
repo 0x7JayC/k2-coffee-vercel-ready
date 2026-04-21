@@ -425,16 +425,26 @@ function Footer() {
             </p>
           </div>
           {[
-            { title: 'Shop', links: ['The Harvest', 'Subscriptions', 'Gift Cards'] },
-            { title: 'Mission', links: ['Ministries', 'Impact Reports', 'Our Story'] },
-            { title: 'Support', links: ['FAQ', 'Shipping', 'Contact'] },
+            { title: 'Shop', links: [
+              { label: 'The Harvest', href: 'https://www.k2coffee.xyz/shop' },
+              { label: 'Subscriptions', href: '/subscribe' },
+            ]},
+            { title: 'Mission', links: [
+              { label: 'Ministries', href: 'https://www.k2coffee.xyz/ministries' },
+              { label: 'Our Story', href: 'https://open.substack.com/pub/k2coffee/p/i-started-a-coffee-brand-because' },
+            ]},
+            { title: 'Support', links: [
+              { label: 'Contact', href: 'mailto:j.chen@wec-uk.org' },
+            ]},
           ].map(col => (
             <div key={col.title}>
               <p style={{ fontFamily: FM, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.dust, marginBottom: 16 }}>
                 {col.title}
               </p>
-              {col.links.map(t => (
-                <p key={t} style={{ fontFamily: FS, fontSize: 13, color: 'rgba(250,245,234,0.6)', marginBottom: 10, cursor: 'pointer' }}>{t}</p>
+              {col.links.map(l => (
+                <p key={l.label} style={{ marginBottom: 10 }}>
+                  <a href={l.href} style={{ fontFamily: FS, fontSize: 13, color: 'rgba(250,245,234,0.6)', textDecoration: 'none' }}>{l.label}</a>
+                </p>
               ))}
             </div>
           ))}
