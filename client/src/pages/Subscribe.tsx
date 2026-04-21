@@ -31,11 +31,10 @@ const FREQUENCIES = [
 const QUANTITIES = [1, 2, 3, 4];
 
 const PERKS = [
-  'Free UK shipping on every delivery',
+  'Free local collection and Free UK shipping over £59',
   'Pause or cancel any time — no penalty',
   '100% of profit goes to your chosen ministry',
   'Priority access to new harvests',
-  'Personalised tasting notes with each box',
 ];
 
 export default function Subscribe() {
