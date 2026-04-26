@@ -7,6 +7,13 @@ import { C, FD, FS, FM } from "@/lib/tokens";
 import { K2Logo } from "@/components/Layout";
 import { useIsMobile } from "@/hooks/useMobile";
 
+// Only allow same-origin paths as a return target — never an external URL.
+function safeNext(raw: string | null): string {
+  if (!raw) return '/';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  return raw;
+}
+
 export default function Auth() {
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
@@ -16,8 +23,15 @@ export default function Auth() {
   const [magicSent, setMagicSent] = useState(false);
   const isMobile = useIsMobile();
 
+  const nextPath = safeNext(
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('next')
+      : null
+  );
+  const redirectBack = `${window.location.origin}/auth${nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}`;
+
   if (isAuthenticated) {
-    setLocation('/');
+    setLocation(nextPath);
     return null;
   }
 
@@ -27,7 +41,7 @@ export default function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/auth` },
+        options: { emailRedirectTo: redirectBack },
       });
       if (error) throw error;
       setMagicSent(true);
@@ -43,7 +57,7 @@ export default function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth` },
+        options: { redirectTo: redirectBack },
       });
       if (error) throw error;
     } catch (error: any) {
