@@ -286,7 +286,17 @@ function Nav({ cartCount }: { cartCount: number }) {
             </nav>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 16 }}>
+            {isMobile && (
+              <Link href="/shop"
+                style={{
+                  background: C.bark, color: C.ivory, textDecoration: 'none',
+                  padding: '8px 16px', borderRadius: 9999,
+                  fontFamily: FS, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
+                }}>
+                Shop
+              </Link>
+            )}
             <CartIcon />
             {!isMobile && (
               isAuthenticated ? (
@@ -469,6 +479,7 @@ export default function Layout({ children }: LayoutProps) {
   const [cartCount, setCartCount] = useState(0);
   const [drawerProduct, setDrawerProduct] = useState<DrawerProduct | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
   const ministriesQuery = trpc.ministries.list.useQuery();
 
   useEffect(() => {
@@ -510,6 +521,8 @@ export default function Layout({ children }: LayoutProps) {
       setToast('Added to cart');
     }
     setDrawerProduct(null);
+    // Drop the user where they expect to be next: reviewing & checking out.
+    setLocation('/cart');
   };
 
   const ministries: Ministry[] = (ministriesQuery.data ?? []).map(m => ({

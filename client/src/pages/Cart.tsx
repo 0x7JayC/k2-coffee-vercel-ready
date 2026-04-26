@@ -54,6 +54,9 @@ export default function Cart() {
     if (saved) setCart(JSON.parse(saved));
     const ministry = localStorage.getItem('k2_ministry');
     if (ministry) setSelectedMinistry(Number(ministry));
+    // Browsers restore scroll position after a hard nav (e.g. OAuth round-trip).
+    // Force the user back to the top so they see the order summary, not the footer.
+    window.scrollTo(0, 0);
   }, []);
 
   const updateQty = (id: number, qty: number) => {
@@ -71,7 +74,7 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
-    if (!isAuthenticated) { window.location.href = '/auth'; return; }
+    if (!isAuthenticated) { window.location.href = '/auth?next=/cart'; return; }
     if (!selectedMinistry) { toast.error('Please select a ministry to support'); return; }
     if (cart.length === 0) { toast.error('Your cart is empty'); return; }
     checkoutMutation.mutate({
@@ -207,6 +210,16 @@ export default function Cart() {
                       100% of profit goes here.
                     </div>
                   </div>
+                ) : selectedMinistry !== null && ministriesQuery.isLoading ? (
+                  // Avoid flashing the radio list when a saved selection is still loading
+                  <div>
+                    <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 6 }}>
+                      Funding
+                    </div>
+                    <div style={{ fontFamily: FS, fontSize: 13, color: C.mocha }}>
+                      Restoring your ministry…
+                    </div>
+                  </div>
                 ) : (
                   <div>
                     <div style={{ fontFamily: FM, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.dust, marginBottom: 8 }}>
@@ -265,8 +278,8 @@ export default function Cart() {
                       <span>Local collection</span>
                       <span style={{ fontFamily: FM, color: C.crema }}>FREE</span>
                     </div>
-                    <div style={{ fontSize: 11, color: C.mocha, marginTop: 2 }}>
-                      Pick up from us — no postage charge.
+                    <div style={{ fontSize: 11, color: C.mocha, marginTop: 2, lineHeight: 1.5 }}>
+                      St Barnabas Church, North Finchley, London — currently the only collection point.
                     </div>
                   </span>
                 </label>
