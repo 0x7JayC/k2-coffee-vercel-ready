@@ -13,6 +13,22 @@ import {
 } from "./_core/email";
 import { ENV } from "./_core/env";
 
+const orderItemSchema = z.array(z.object({
+  id: z.number(),
+  name: z.string(),
+  quantity: z.number().int().positive(),
+  price: z.number().int().positive(),
+}));
+
+function safeParseItems(raw: string | undefined) {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    return orderItemSchema.parse(parsed);
+  } catch {
+    return [];
+  }
+}
+
 // Helper to ensure user is admin
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") {
@@ -168,7 +184,7 @@ export const appRouter = router({
         }
 
         const ministryId = parseInt(session.metadata?.ministryId || "0") || null;
-        const items = JSON.parse(session.metadata?.items || "[]");
+        const items = safeParseItems(session.metadata?.items);
 
         const shippingDetails = (session as any).shipping_details;
         const shippingAddress = shippingDetails
@@ -195,8 +211,8 @@ export const appRouter = router({
           totalAmount: session.amount_total || 0,
           currency: session.currency || "gbp",
           status: "paid",
-          items: items as any,
-          shippingAddress: shippingAddress as any,
+          items: items,
+          shippingAddress: shippingAddress,
         });
 
         if (order) {

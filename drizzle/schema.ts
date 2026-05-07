@@ -61,7 +61,7 @@ export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   ministryId: integer("ministry_id").references(() => ministries.id),
-  stripeSessionId: varchar("stripe_session_id", { length: 255 }),
+  stripeSessionId: varchar("stripe_session_id", { length: 255 }).unique(),
   stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
   customerEmail: varchar("customer_email", { length: 320 }),
   totalAmount: integer("total_amount").notNull(),
