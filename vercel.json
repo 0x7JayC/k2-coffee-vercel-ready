@@ -5,9 +5,6 @@
   "functions": {
     "api/trpc/[trpc].mjs": {
       "maxDuration": 30
-    },
-    "api/webhook.mjs": {
-      "maxDuration": 30
     }
   },
   "rewrites": [
