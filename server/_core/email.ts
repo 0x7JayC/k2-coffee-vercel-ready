@@ -56,7 +56,7 @@ export async function sendOrderConfirmationEmail(
         `<tr>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
           <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${((item.price * item.quantity) / 100).toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">£${((item.price * item.quantity) / 100).toFixed(2)}</td>
         </tr>`
     )
     .join("");
@@ -84,7 +84,7 @@ export async function sendOrderConfirmationEmail(
           <tfoot>
             <tr>
               <td colspan="2" style="padding: 12px 8px; font-weight: bold; color: #78350f;">Total</td>
-              <td style="padding: 12px 8px; text-align: right; font-weight: bold; color: #78350f;">$${(totalAmount / 100).toFixed(2)}</td>
+              <td style="padding: 12px 8px; text-align: right; font-weight: bold; color: #78350f;">£${(totalAmount / 100).toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>
@@ -122,7 +122,7 @@ export async function sendAdminOrderAlert(
   if (!adminEmail) return false;
 
   const itemsList = items
-    .map((i) => `${i.name} x${i.quantity} — $${((i.price * i.quantity) / 100).toFixed(2)}`)
+    .map((i) => `${i.name} x${i.quantity} — £${((i.price * i.quantity) / 100).toFixed(2)}`)
     .join("\n");
 
   const html = `
@@ -130,7 +130,7 @@ export async function sendAdminOrderAlert(
       <h2 style="color: #78350f;">New Order Alert — #${orderId}</h2>
       <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
       <p><strong>Ministry:</strong> ${ministryName}</p>
-      <p><strong>Total:</strong> $${(totalAmount / 100).toFixed(2)}</p>
+      <p><strong>Total:</strong> £${(totalAmount / 100).toFixed(2)}</p>
       <h3>Items:</h3>
       <pre style="background: #f5f5f5; padding: 12px; border-radius: 6px;">${itemsList}</pre>
     </div>
@@ -138,7 +138,7 @@ export async function sendAdminOrderAlert(
 
   return sendEmail({
     to: adminEmail,
-    subject: `[K2 Admin] New Order #${orderId} — $${(totalAmount / 100).toFixed(2)}`,
+    subject: `[K2 Admin] New Order #${orderId} — £${(totalAmount / 100).toFixed(2)}`,
     html,
   });
 }

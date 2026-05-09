@@ -78,9 +78,8 @@ export default function Cart() {
     if (!selectedMinistry) { toast.error('Please select a ministry to support'); return; }
     if (cart.length === 0) { toast.error('Your cart is empty'); return; }
     checkoutMutation.mutate({
-      items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price })),
+      items: cart.map(i => ({ id: i.id, quantity: i.quantity })),
       ministryId: selectedMinistry,
-      totalAmount: total,
       shippingMethod,
     });
   };
