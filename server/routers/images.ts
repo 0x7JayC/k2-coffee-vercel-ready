@@ -37,7 +37,8 @@ export const imagesRouter = router({
           .createSignedUploadUrl(path);
 
         if (error) {
-          throw new Error(`Could not create upload URL: ${error.message}`);
+          console.error("[Images] Supabase error:", error.message);
+          throw new Error("Could not create upload URL");
         }
 
         const {
