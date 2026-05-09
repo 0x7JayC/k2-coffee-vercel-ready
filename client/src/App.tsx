@@ -1,23 +1,25 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Layout from "./components/Layout";
+// Critical path — loaded eagerly
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
-import Ministries from "./pages/Ministries";
-import AdminDashboard from "./pages/AdminDashboard";
-import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
-import OrderSuccess from "./pages/OrderSuccess";
-import OrderCancel from "./pages/OrderCancel";
-import ProductDetail from "./pages/ProductDetail";
-import Subscribe from "./pages/Subscribe";
-import Contact from "./pages/Contact";
+// Non-critical — lazy loaded
+const Ministries     = lazy(() => import("./pages/Ministries"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Profile        = lazy(() => import("./pages/Profile"));
+const OrderSuccess   = lazy(() => import("./pages/OrderSuccess"));
+const OrderCancel    = lazy(() => import("./pages/OrderCancel"));
+const ProductDetail  = lazy(() => import("./pages/ProductDetail"));
+const Subscribe      = lazy(() => import("./pages/Subscribe"));
+const Contact        = lazy(() => import("./pages/Contact"));
+const NotFound       = lazy(() => import("./pages/NotFound"));
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -25,9 +27,13 @@ function ScrollToTop() {
   return null;
 }
 
+const PageFallback = () => (
+  <div style={{ minHeight: "60vh", background: "#f5efe4" }} />
+);
+
 function Router() {
   return (
-    <>
+    <Suspense fallback={<PageFallback />}>
       <ScrollToTop />
       <Switch>
         {/* Auth page renders without the main Layout */}
@@ -53,7 +59,7 @@ function Router() {
         </Layout>
       </Route>
       </Switch>
-    </>
+    </Suspense>
   );
 }
 
