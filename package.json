@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:server": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "build:all": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build:vercel": "npm run build && npx esbuild server/trpcEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/trpc/\\[trpc\\].mjs && npx esbuild server/webhookEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/webhook.mjs",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
