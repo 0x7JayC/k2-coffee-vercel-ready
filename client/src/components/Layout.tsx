@@ -435,7 +435,7 @@ function Footer() {
               { label: 'Our Story', href: 'https://open.substack.com/pub/k2coffee/p/i-started-a-coffee-brand-because' },
             ]},
             { title: 'Support', links: [
-              { label: 'Contact', href: 'mailto:j.chen@wec-uk.org' },
+              { label: 'Contact', href: '/contact' },
             ]},
           ].map(col => (
             <div key={col.title}>

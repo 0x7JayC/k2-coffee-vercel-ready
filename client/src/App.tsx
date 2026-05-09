@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Layout from "./components/Layout";
@@ -16,12 +17,21 @@ import OrderSuccess from "./pages/OrderSuccess";
 import OrderCancel from "./pages/OrderCancel";
 import ProductDetail from "./pages/ProductDetail";
 import Subscribe from "./pages/Subscribe";
+import Contact from "./pages/Contact";
+
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [location]);
+  return null;
+}
 
 function Router() {
   return (
-    <Switch>
-      {/* Auth page renders without the main Layout */}
-      <Route path="/auth" component={Auth} />
+    <>
+      <ScrollToTop />
+      <Switch>
+        {/* Auth page renders without the main Layout */}
+        <Route path="/auth" component={Auth} />
 
       {/* All other routes use the main Layout */}
       <Route>
@@ -37,11 +47,13 @@ function Router() {
             <Route path="/subscribe" component={Subscribe} />
             <Route path="/order/success" component={OrderSuccess} />
             <Route path="/order/cancel" component={OrderCancel} />
+            <Route path="/contact" component={Contact} />
             <Route component={NotFound} />
           </Switch>
         </Layout>
       </Route>
-    </Switch>
+      </Switch>
+    </>
   );
 }
 

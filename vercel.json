@@ -1,14 +1,18 @@
 {
-  "buildCommand": "npm run build && npx esbuild server/trpcEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/trpc/\\[trpc\\].mjs",
+  "buildCommand": "npm run build && npx esbuild server/trpcEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/trpc/\\[trpc\\].mjs && npx esbuild server/webhookEntry.ts --bundle --platform=node --packages=external --format=esm --outfile=api/webhook.mjs",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "functions": {
     "api/trpc/[trpc].mjs": {
       "maxDuration": 30
+    },
+    "api/webhook.mjs": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
     { "source": "/api/trpc/(.*)", "destination": "/api/trpc/$1" },
+    { "source": "/api/webhook", "destination": "/api/webhook" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

@@ -4,6 +4,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
 import { checkoutRouter } from "./routers/checkout";
+import { contactRouter } from "./routers/contact";
 import { getCheckoutSession } from "./_core/checkout";
 import { imagesRouter } from "./routers/images";
 import { orderNotificationsRouter } from "./routers/orderNotifications";
@@ -149,6 +150,9 @@ export const appRouter = router({
 
   // Checkout router
   checkout: checkoutRouter,
+
+  // Contact router
+  contact: contactRouter,
 
   // Images router
   images: imagesRouter,

@@ -175,6 +175,14 @@ export default function OrderSuccess() {
             </ul>
           </div>
 
+          {/* Contact link */}
+          <p className="text-center text-sm text-amber-700">
+            Problem with your order?{" "}
+            <Link href="/contact" className="font-semibold underline underline-offset-2">
+              Get in touch
+            </Link>
+          </p>
+
         </div>
       </section>
     </div>
