@@ -425,7 +425,7 @@ export default function Subscribe() {
                 [`${chosenProd.name} ×${qty}`, fmt(chosenProd.price * qty)],
                 chosenFreq.discount > 0 ? [`${chosenFreq.label} discount`, `-${chosenFreq.discount}%`] : null,
                 ['UK shipping', 'Free'],
-              ].filter(Boolean).map(([k, v]) => (
+              ].filter((row): row is string[] => row !== null).map(([k, v]) => (
                 <div key={String(k)} style={{ display: 'flex', justifyContent: 'space-between',
                   fontFamily: FS, fontSize: 14, color: C.dust, marginBottom: 14 }}>
                   <span>{k}</span>

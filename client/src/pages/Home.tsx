@@ -6,8 +6,8 @@ import { K2Logo } from "@/components/Layout";
 import { useIsMobile } from "@/hooks/useMobile";
 
 // ─── Reveal hook ──────────────────────────────────────────────────────────────
-function useReveal(delay = 0) {
-  const ref = useRef<HTMLDivElement>(null);
+function useReveal<T extends HTMLElement = HTMLDivElement>(delay = 0) {
+  const ref = useRef<T>(null);
   const [vis, setVis] = useState(false);
   useEffect(() => {
     const el = ref.current;
@@ -251,7 +251,7 @@ const CHAPTERS = [
 function StoryChapter({ ch, idx }: { ch: typeof CHAPTERS[0]; idx: number }) {
   const [rNum, sNum] = useReveal(0);
   const [rEye, sEye] = useReveal(80);
-  const [rQ, sQ]     = useReveal(160);
+  const [rQ, sQ]     = useReveal<HTMLQuoteElement>(160);
   const [rB, sB]     = useReveal(240);
   const isMobile = useIsMobile();
   const flipped = ch.side === 'right';

@@ -9,7 +9,6 @@
     "jsx": "react-jsx",
     "outDir": "./dist",
     "rootDir": ".",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"]

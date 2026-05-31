@@ -110,7 +110,7 @@ export default function Profile() {
                 ) : ordersQuery.data && ordersQuery.data.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {ordersQuery.data.map(order => {
-                      const st = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
+                      const st = STATUS_STYLES[order.status ?? 'pending'] || STATUS_STYLES.pending;
                       const items = (() => {
                         try { return typeof order.items === 'string' ? JSON.parse(order.items) : order.items; }
                         catch { return []; }
